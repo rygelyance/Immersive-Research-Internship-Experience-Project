@@ -1,0 +1,52 @@
+---
+title: "Twin Cities Station Mapping"
+format: html
+editor: visual
+---
+
+## Station Information
+
+This code reads the data from csv files we created that contains the names of each station . The METRO Blue and Green lines in total have 37 stations. This file has the name of each station, their addresses, opening dates, and whether or not they have parking.
+
+```{r}
+library("tidyverse")
+library("ggmap")
+
+station_data <- read.csv("Twin Cities Stations - Sheet1.csv") %>%
+  mutate(Station2=paste(Stations, "Station Metro Transit, Minnesota"))
+```
+
+This next segments use a Google API key in order to get the locations of each station of the light rail in latitude/longitude coordinates, then fixes a few select points where the Google API failed to get a precise location.
+
+```{r}
+register_google(key = "AIzaSyBFzZRvnnrYw2l5CQRrbBnPZt2-EIAsiD8", write = TRUE)
+
+addr.geo <- mutate_geocode(station_data, location = Station2, output = "latlona")
+```
+
+```{r}
+geo <- addr.geo %>%
+  mutate(lat2 = ifelse(address=="bloomington, mn, usa", 44.85639, lat)) %>%
+  mutate(lon2 = ifelse(address=="bloomington, mn, usa", -93.22628, lon)) %>%
+  mutate(lat2 = ifelse(address=="minnesota, usa", 44.95648, lat2)) %>%
+  mutate(lon2 = ifelse(address=="minnesota, usa", -93.17874, lon2)) %>%
+  mutate(lat2 = ifelse(Station2=="Western Avenue station Metro Transit, Minnesota", 44.95586, lat2)) %>%
+  mutate(lon2 = ifelse(Station2=="Western Avenue station Metro Transit, Minnesota", -93.11708, lon2))
+
+```
+
+## Plotting the Stations
+
+This next code segment plots each of the station locations (in latitude/longitude) we extracted in the previous stage
+
+```{r}
+library("terra")
+
+sample_coords <- cbind(geo$lon2, geo$lat2)
+lr_stations <- vect(sample_coords)
+geom(lr_stations)
+crdref <- "+proj=longlat +datum=WGS84"
+pts <- vect(sample_coords, crs=crdref)
+plot(pts)
+
+```
