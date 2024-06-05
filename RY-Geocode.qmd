@@ -50,3 +50,7 @@ pts <- vect(sample_coords, crs=crdref)
 plot(pts)
 
 ```
+
+## Plotting the Stations (Part 2)
+
+This section adds in a map
