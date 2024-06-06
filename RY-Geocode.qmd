@@ -10,7 +10,7 @@ This code reads the data from csv files we created that contains the names of ea
 
 ```{r}
 library("tidyverse")
-library("ggmap")
+library("ggmap") 
 
 station_data <- read.csv("Twin Cities Stations - Sheet1.csv") %>%
   mutate(Station2=paste(Stations, "Station Metro Transit, Minnesota"))
@@ -19,7 +19,7 @@ station_data <- read.csv("Twin Cities Stations - Sheet1.csv") %>%
 This next segments use a Google API key in order to get the locations of each station of the light rail in latitude/longitude coordinates, then fixes a few select points where the Google API failed to get a precise location.
 
 ```{r}
-register_google(key = "AIzaSyBFzZRvnnrYw2l5CQRrbBnPZt2-EIAsiD8", write = TRUE)
+register_google(key = "AIzaSyCA9_G1smyPrHEIa92k1IF0dwBsAGFCNXM", write = TRUE)
 
 addr.geo <- mutate_geocode(station_data, location = Station2, output = "latlona")
 ```
@@ -92,6 +92,75 @@ extent <- buffer(pts, width = 600)
 bg <- get_tiles(ext(extent))
 plot(bg)
 points(pts)
+lines(lr_project, col = "blue")
+lines(pts_buffer1, col = "green")
+lines(pts_buffer, col = "red")
+```
+
+## Find Sources of Pollution near Light Rail Routes and its Addresses
+
+This file has the name of each factory, their addresses, opening dates, and whether or not they have parking.
+
+```{r}
+library("tidyverse")
+library("ggmap") 
+
+factory_data <- read.csv("Sources of Pollution - Twin Cities - Sheet1 (2).csv") %>%
+  mutate(Factory2=paste(Factories, "Factory, Minnesota"))
+```
+
+This next segments use a Google API key in order to get the locations of each station of the light rail in latitude/longitude coordinates, then fixes a few select points where the Google API failed to get a precise location.
+
+```{r}
+register_google(key = "AIzaSyCA9_G1smyPrHEIa92k1IF0dwBsAGFCNXM", write = TRUE)
+
+addr.geo <- mutate_geocode(factory_data, location = Factory2, output = "latlona")
+```
+
+```{r}
+geo2 <- addr.geo %>%
+  mutate(lat2 = ifelse(Factories=="Flint Hills Resources Line Bend Refinery, Rosemount, MN", 44.76432, lat)) %>%
+  mutate(lon2 = ifelse(Factories=="Flint Hills Resources Line Bend Refinery, Rosemount, MN", -93.03947, lon)) %>%
+  mutate(lat2 = ifelse(Factories=="Koch Industries (Flint Hills Resources), Rosemount, MN", 44.76424, lat2)) %>%
+  mutate(lon2 = ifelse(Factories=="Koch Industries (Flint Hills Resources), Rosemount, MN", -93.03943, lon2))
+```
+
+## Plotting the Factory Sources of Pollution
+
+```{r}
+library("terra")
+
+sample_coords <- cbind(geo$lon2, geo$lat2)
+lr_stations <- vect(sample_coords)
+geom(lr_stations)
+crdref <- "+proj=longlat +datum=WGS84"
+pts <- vect(sample_coords, crs=crdref)
+
+pol_coords <- cbind(geo2$lon2, geo2$lat2)
+crdref <- "+proj=longlat +datum=WGS84"
+pol_pts <- vect(pol_coords, crs=crdref)
+
+library("maptiles")
+
+plot(pts)
+pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+plot(pts_buffer)
+
+tc_lr <- vect("lr_1km_buff/lr_1km_buff.shp")
+tc_lr_line <- aggregate(tc_lr, dissolve = TRUE)
+plot(tc_lr_line)
+
+lr_project <- project(tc_lr_line, "+proj=longlat + ellps = WGS84 +datum = WGS84 + nodefs")
+
+lrc <- centroids(lr_project, inside = FALSE)
+
+pts_buffer1 <- buffer(lrc, width = 10000)
+extent <- buffer(pts, width = 10000)
+
+bg <- get_tiles(ext(extent))
+plot(bg)
+points(pts)
+points(pol_pts, col = "purple")
 lines(lr_project, col = "blue")
 lines(pts_buffer1, col = "green")
 lines(pts_buffer, col = "red")
