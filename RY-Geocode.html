@@ -103,10 +103,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"tidyverse"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.3     ✔ readr     2.1.4
-✔ forcats   1.0.0     ✔ stringr   1.5.0
-✔ ggplot2   3.4.3     ✔ tibble    3.2.1
-✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
 ✔ purrr     1.0.2     
 ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::filter() masks stats::filter()
@@ -115,24 +115,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"ggmap"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'ggmap' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
 <pre><code>ℹ Google's Terms of Service: &lt;https://mapsplatform.google.com&gt;
   Stadia Maps' Terms of Service: &lt;https://stadiamaps.com/terms-of-service/&gt;
   OpenStreetMap's Tile Usage Policy: &lt;https://operations.osmfoundation.org/policies/tiles/&gt;
 ℹ Please cite ggmap if you use it! Use `citation("ggmap")` for details.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>station_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"Twin Cities Stations - Sheet1.csv"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Station2=</span><span class="fu">paste</span>(Stations, <span class="st">"Station Metro Transit, Minnesota"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>station_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"Twin Cities Stations - Sheet1.csv"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Station2=</span><span class="fu">paste</span>(Stations, <span class="st">"Station Metro Transit, Minnesota"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This next segments use a Google API key in order to get the locations of each station of the light rail in latitude/longitude coordinates, then fixes a few select points where the Google API failed to get a precise location.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">register_google</span>(<span class="at">key =</span> <span class="st">"AIzaSyBFzZRvnnrYw2l5CQRrbBnPZt2-EIAsiD8"</span>, <span class="at">write =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">register_google</span>(<span class="at">key =</span> <span class="st">"AIzaSyBFzZRvnnrYw2l5CQRrbBnPZt2-EIAsiD8"</span>, <span class="at">write =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>ℹ Replacing old key (AIzaSyBFzZRvnnrYw2l5CQRrbBnPZt2) with new key in C:\Users\rygel\Documents/.Renviron</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>addr.geo <span class="ot">&lt;-</span> <span class="fu">mutate_geocode</span>(station_data, <span class="at">location =</span> Station2, <span class="at">output =</span> <span class="st">"latlona"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>addr.geo <span class="ot">&lt;-</span> <span class="fu">mutate_geocode</span>(station_data, <span class="at">location =</span> Station2, <span class="at">output =</span> <span class="st">"latlona"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>ℹ &lt;https://maps.googleapis.com/maps/api/geocode/json?address=10th+Street+Station+Metro+Transit,+Minnesota&amp;key=xxx-EIAsiD8&gt;</code></pre>
 </div>
@@ -254,22 +251,22 @@ station, bloomington, mn 55425, usa"</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>geo <span class="ot">&lt;-</span> addr.geo <span class="sc">%&gt;%</span></span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lat2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"bloomington, mn, usa"</span>, <span class="fl">44.85639</span>, lat)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lon2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"bloomington, mn, usa"</span>, <span class="sc">-</span><span class="fl">93.22628</span>, lon)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lat2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"minnesota, usa"</span>, <span class="fl">44.95648</span>, lat2)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lon2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"minnesota, usa"</span>, <span class="sc">-</span><span class="fl">93.17874</span>, lon2)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lat2 =</span> <span class="fu">ifelse</span>(Station2<span class="sc">==</span><span class="st">"Western Avenue station Metro Transit, Minnesota"</span>, <span class="fl">44.95586</span>, lat2)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lon2 =</span> <span class="fu">ifelse</span>(Station2<span class="sc">==</span><span class="st">"Western Avenue station Metro Transit, Minnesota"</span>, <span class="sc">-</span><span class="fl">93.11708</span>, lon2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>geo <span class="ot">&lt;-</span> addr.geo <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lat2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"bloomington, mn, usa"</span>, <span class="fl">44.85639</span>, lat)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lon2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"bloomington, mn, usa"</span>, <span class="sc">-</span><span class="fl">93.22628</span>, lon)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lat2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"minnesota, usa"</span>, <span class="fl">44.95648</span>, lat2)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lon2 =</span> <span class="fu">ifelse</span>(address<span class="sc">==</span><span class="st">"minnesota, usa"</span>, <span class="sc">-</span><span class="fl">93.17874</span>, lon2)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lat2 =</span> <span class="fu">ifelse</span>(Station2<span class="sc">==</span><span class="st">"Western Avenue station Metro Transit, Minnesota"</span>, <span class="fl">44.95586</span>, lat2)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lon2 =</span> <span class="fu">ifelse</span>(Station2<span class="sc">==</span><span class="st">"Western Avenue station Metro Transit, Minnesota"</span>, <span class="sc">-</span><span class="fl">93.11708</span>, lon2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="plotting-the-stations" class="level2">
 <h2 class="anchored" data-anchor-id="plotting-the-stations">Plotting the Stations</h2>
 <p>This next code segment plots each of the station locations (in latitude/longitude) we extracted in the previous stage</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"terra"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"terra"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>terra 1.7.46</code></pre>
+<pre><code>terra 1.7.78</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
@@ -285,9 +282,9 @@ Attaching package: 'terra'</code></pre>
 
     extract</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>sample_coords <span class="ot">&lt;-</span> <span class="fu">cbind</span>(geo<span class="sc">$</span>lon2, geo<span class="sc">$</span>lat2)</span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>lr_stations <span class="ot">&lt;-</span> <span class="fu">vect</span>(sample_coords)</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="fu">geom</span>(lr_stations)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>sample_coords <span class="ot">&lt;-</span> <span class="fu">cbind</span>(geo<span class="sc">$</span>lon2, geo<span class="sc">$</span>lat2)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>lr_stations <span class="ot">&lt;-</span> <span class="fu">vect</span>(sample_coords)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="fu">geom</span>(lr_stations)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      geom part         x        y hole
  [1,]    1    1 -93.09750 44.95065    0
@@ -295,7 +292,7 @@ Attaching package: 'terra'</code></pre>
  [3,]    3    1 -93.22945 44.93465    0
  [4,]    4    1 -93.21982 44.92075    0
  [5,]    5    1 -93.21016 44.91243    0
- [6,]    6    1 -93.22326 44.85794    0
+ [6,]    6    1 -93.22315 44.85873    0
  [7,]    7    1 -93.22628 44.85639    0
  [8,]    8    1 -93.10517 44.95575    0
  [9,]    9    1 -93.25105 44.96840    0
@@ -328,9 +325,9 @@ Attaching package: 'terra'</code></pre>
 [36,]   36    1 -93.17874 44.95648    0
 [37,]   37    1 -93.20725 44.96785    0</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>crdref <span class="ot">&lt;-</span> <span class="st">"+proj=longlat +datum=WGS84"</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>pts <span class="ot">&lt;-</span> <span class="fu">vect</span>(sample_coords, <span class="at">crs=</span>crdref)</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>crdref <span class="ot">&lt;-</span> <span class="st">"+proj=longlat +datum=WGS84"</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>pts <span class="ot">&lt;-</span> <span class="fu">vect</span>(sample_coords, <span class="at">crs=</span>crdref)</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -342,7 +339,108 @@ Attaching package: 'terra'</code></pre>
 </section>
 <section id="plotting-the-stations-part-2" class="level2">
 <h2 class="anchored" data-anchor-id="plotting-the-stations-part-2">Plotting the Stations (Part 2)</h2>
-<p>This section adds in a map</p>
+<p>This section plots the station locations as a set of polygons</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>point_map <span class="ot">&lt;-</span> <span class="fu">vect</span>(sample_coords, <span class="at">type =</span> <span class="st">"points"</span>, <span class="at">crs =</span> crdref)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>point_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> class       : SpatVector 
+ geometry    : points 
+ dimensions  : 37, 0  (geometries, attributes)
+ extent      : -93.27708, -93.0852, 44.85512, 44.98326  (xmin, xmax, ymin, ymax)
+ coord. ref. : +proj=longlat +datum=WGS84 +no_defs </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(point_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="RY-Geocode_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>pols <span class="ot">&lt;-</span> <span class="fu">vect</span>(sample_coords, <span class="at">type =</span> <span class="st">"polygons"</span>, <span class="at">crs =</span> crdref)</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>pols</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> class       : SpatVector 
+ geometry    : polygons 
+ dimensions  : 1, 0  (geometries, attributes)
+ extent      : -93.27708, -93.0852, 44.85512, 44.98326  (xmin, xmax, ymin, ymax)
+ coord. ref. : +proj=longlat +datum=WGS84 +no_defs </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pols)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="RY-Geocode_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pols, <span class="at">border =</span> <span class="st">"blue"</span>, <span class="at">col =</span> <span class="st">"yellow"</span>, <span class="at">lwd=</span><span class="dv">2</span>)</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(<span class="at">x =</span> sample_coords, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">cex =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="RY-Geocode_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="plotting-the-stations-part-3" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-the-stations-part-3">Plotting the Stations (Part 3)</h2>
+<p>This code chunk displays the station locations on top of a real map with a 1km buffer circle around each station location.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"terra"</span>)</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"maptiles"</span>)</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="RY-Geocode_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>pts_buffer <span class="ot">&lt;-</span> <span class="fu">buffer</span>(pts, <span class="at">width =</span> <span class="dv">1000</span>) <span class="co"># Width is measured in meters</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pts_buffer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="RY-Geocode_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>tc_lr <span class="ot">&lt;-</span> <span class="fu">vect</span>(<span class="st">"lr_1km_buff/lr_1km_buff.shp"</span>)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>tc_lr_line <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(tc_lr, <span class="at">dissolve =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tc_lr_line)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="RY-Geocode_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>lr_project <span class="ot">&lt;-</span> <span class="fu">project</span>(tc_lr_line, <span class="st">"+proj=longlat + ellps = WGS84 +datum = WGS84 + nodefs"</span>)</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>lrc <span class="ot">&lt;-</span> <span class="fu">centroids</span>(lr_project, <span class="at">inside =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>pts_buffer1 <span class="ot">&lt;-</span> <span class="fu">buffer</span>(lrc, <span class="at">width =</span> <span class="dv">10000</span>)</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>extent <span class="ot">&lt;-</span> <span class="fu">buffer</span>(pts, <span class="at">width =</span> <span class="dv">600</span>)</span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>bg <span class="ot">&lt;-</span> <span class="fu">get_tiles</span>(<span class="fu">ext</span>(extent))</span>
+<span id="cb67-9"><a href="#cb67-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(bg)</span>
+<span id="cb67-10"><a href="#cb67-10" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pts)</span>
+<span id="cb67-11"><a href="#cb67-11" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(lr_project, <span class="at">col =</span> <span class="st">"blue"</span>)</span>
+<span id="cb67-12"><a href="#cb67-12" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(pts_buffer1, <span class="at">col =</span> <span class="st">"green"</span>)</span>
+<span id="cb67-13"><a href="#cb67-13" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(pts_buffer, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="RY-Geocode_files/figure-html/unnamed-chunk-6-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 
 </main>

@@ -53,4 +53,46 @@ plot(pts)
 
 ## Plotting the Stations (Part 2)
 
-This section adds in a map
+This section plots the station locations as a set of polygons
+
+```{r}
+point_map <- vect(sample_coords, type = "points", crs = crdref)
+point_map
+plot(point_map)
+pols <- vect(sample_coords, type = "polygons", crs = crdref)
+pols
+plot(pols)
+plot(pols, border = "blue", col = "yellow", lwd=2)
+points(x = sample_coords, col = "red", pch = 20, cex = 1)
+```
+
+## Plotting the Stations (Part 3)
+
+This code chunk displays the station locations on top of a real map with a 1km buffer circle around each station location.
+
+```{r}
+library("terra")
+library("maptiles")
+
+plot(pts)
+pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+plot(pts_buffer)
+
+tc_lr <- vect("lr_1km_buff/lr_1km_buff.shp")
+tc_lr_line <- aggregate(tc_lr, dissolve = TRUE)
+plot(tc_lr_line)
+
+lr_project <- project(tc_lr_line, "+proj=longlat + ellps = WGS84 +datum = WGS84 + nodefs")
+
+lrc <- centroids(lr_project, inside = FALSE)
+
+pts_buffer1 <- buffer(lrc, width = 10000)
+extent <- buffer(pts, width = 600)
+
+bg <- get_tiles(ext(extent))
+plot(bg)
+points(pts)
+lines(lr_project, col = "blue")
+lines(pts_buffer1, col = "green")
+lines(pts_buffer, col = "red")
+```
