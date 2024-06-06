@@ -123,6 +123,8 @@ geo2 <- addr.geo %>%
   mutate(lon2 = ifelse(Factories=="Flint Hills Resources Line Bend Refinery, Rosemount, MN", -93.03947, lon)) %>%
   mutate(lat2 = ifelse(Factories=="Koch Industries (Flint Hills Resources), Rosemount, MN", 44.76424, lat2)) %>%
   mutate(lon2 = ifelse(Factories=="Koch Industries (Flint Hills Resources), Rosemount, MN", -93.03943, lon2))
+
+write.csv(geo2, "pollution_locations.csv")
 ```
 
 ## Plotting the Factory Sources of Pollution
