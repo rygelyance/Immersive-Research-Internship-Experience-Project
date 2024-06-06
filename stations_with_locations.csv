@@ -1,0 +1,82 @@
+"","Stations","Opening.Dates","Address","Parking","Station2","lon","lat","address","lat2","lon2"
+"1","10th Street","June 14, 2014","Keefe Co. Parking 10th Street Lot 215 E 10th St Downtown St Paul, MN 55101",FALSE,"10th Street Station Metro Transit, Minnesota",-93.0975042,44.9506526,"10th st, 10th st e, st paul, mn 55101, usa",44.9506526,-93.0975042
+"2","30th Avenue","December 4, 2004","8100 30th Avenue South
+Bloomington, Minnesota",TRUE,"30th Avenue Station Metro Transit, Minnesota",-93.2315898,44.8558528,"30th ave station, bloomington, mn 55425, usa",44.8558528,-93.2315898
+"3","38th Street","June 26, 2004","2902 38th Street East
+Minneapolis, Minnesota",FALSE,"38th Street Station Metro Transit, Minnesota",-93.229449,44.934655,"38th st, minneapolis, mn 55406, usa",44.934655,-93.229449
+"4","46th Street","June 26, 2004","3660 46th Street East
+Minneapolis, Minnesota",FALSE,"46th Street Station Metro Transit, Minnesota",-93.2198166,44.9207531,"46th st, 3686 e 46th st, minneapolis, mn 55406, usa",44.9207531,-93.2198166
+"5","50th Street / Minnehaha Park","June 26, 2004","5010 Minnehaha Avenue
+Minneapolis, Minnesota",FALSE,"50th Street / Minnehaha Park Station Metro Transit, Minnesota",-93.210163,44.912429,"50th st - minnehaha, minneapolis, mn 55417, usa",44.912429,-93.210163
+"6","American Boulevard","December 12, 2009","34th Avenue South & East American Boulevard
+Bloomington, Minnesota",FALSE,"American Boulevard Station Metro Transit, Minnesota",-93.2232574,44.8579439,"american blvd 34th ave station, bloomington, mn 55425, usa",44.8579439,-93.2232574
+"7","Bloomington Central","December 4, 2004","8101 31st Avenue South
+Bloomington, Minnesota",FALSE,"Bloomington Central Station Metro Transit, Minnesota",-93.2982799,44.840798,"bloomington, mn, usa",44.85639,-93.22628
+"8","Capitol / Rice Street","June 14, 2014","130 University Avenue West
+Saint Paul, Minnesota",FALSE,"Capitol / Rice Street Station Metro Transit, Minnesota",-93.1051747,44.9557549,"capitol / rice st, st paul, mn 55155, usa",44.9557549,-93.1051747
+"9","Cedar-Riverside","June 26, 2004","613 15th Avenue South
+Minneapolis, Minnesota",FALSE,"Cedar-Riverside Station Metro Transit, Minnesota",-93.251045,44.968397,"cedar-riverside station, minneapolis, mn 55454, usa",44.968397,-93.251045
+"10","Central","June 14, 2014","56 Fifth Street East
+Saint Paul, Minnesota",FALSE,"Central Station Metro Transit, Minnesota",-93.0923127,44.9461453,"central station, st paul, mn 55101, usa",44.9461453,-93.0923127
+"11","Dale Street","June 14, 2014","616 University Avenue West (Eastbound)
+641 University Avenue West (Westbound)
+Saint Paul, Minnesota",FALSE,"Dale Street Station Metro Transit, Minnesota",-93.1264373,44.955723,"dale st station, st paul, mn, usa",44.955723,-93.1264373
+"12","East Bank","June 14, 2014","551 Washington Avenue
+Minneapolis, Minnesota",FALSE,"East Bank Station Metro Transit, Minnesota",-93.231058,44.9736955,"east bank, minneapolis, mn 55455, usa",44.9736955,-93.231058
+"13","Fairview Avenue","June 14, 2014","1863 University Avenue West
+Saint Paul, Minnesota",FALSE,"Fairview Avenue Station Metro Transit, Minnesota",-94.6858998,46.729553,"minnesota, usa",44.95648,-93.17874
+"14","Fort Snelling","June 26, 2004","6053 Minnehaha Avenue
+Fort Snelling, Minnesota",TRUE,"Fort Snelling Station Metro Transit, Minnesota",-93.1980175,44.893368,"fort snelling station, fort snelling unorganized territory, mn 55111, usa",44.893368,-93.1980175
+"15","Franklin Avenue","June 26, 2004","1808 Franklin Avenue East
+Minneapolis, Minnesota",FALSE,"Franklin Avenue Station Metro Transit, Minnesota",-93.2469886,44.9625297,"franklin ave station, minneapolis, mn 55404, usa",44.9625297,-93.2469886
+"16","Government Plaza","June 24, 2004","352 South 5th Street
+Minneapolis, Minnesota",FALSE,"Government Plaza Station Metro Transit, Minnesota",-93.26616,44.9768693,"government plaza, minneapolis, mn 55487, usa",44.9768693,-93.26616
+"17","Hamline Avenue","June 14, 2014","1324 University Avenue West (Eastbound)
+1359 University Avenue West (Westbound)
+Saint Paul, Minnesota",FALSE,"Hamline Avenue Station Metro Transit, Minnesota",-93.157728,44.955718,"hamline ave, st paul, mn 55104, usa",44.955718,-93.157728
+"18","Lake Street / Midtown","June 26, 2004","2310 Lake Street East
+Minneapolis, Minnesota",FALSE,"Lake Street / Midtown Station Metro Transit, Minnesota",-93.238823,44.948376,"lake street midtown station, minneapolis, mn 55407, usa",44.948376,-93.238823
+"19","Lexington Parkway","June 14, 2014","1100 University Avenue West (Eastbound)
+1117 University Avenue West (Westbound)
+Saint Paul, Minnesota",FALSE,"Lexington Parkway Station Metro Transit, Minnesota",-93.1475395,44.9557856,"lexington pkwy station, st paul, mn 55104, usa",44.9557856,-93.1475395
+"20","Mall of America","December 4, 2004","8240 24th Avenue South
+Bloomington, Minnesota",FALSE,"Mall of America Station Metro Transit, Minnesota",-93.2401385,44.8551215,"mall of america, bloomington, mn 55425, usa",44.8551215,-93.2401385
+"21","Nicollet Mall","June 26, 2004","35 South 5th Street
+Minneapolis, Minnesota",FALSE,"Nicollet Mall Station Metro Transit, Minnesota",-93.2699344,44.9785783,"nicollet mall, minneapolis, mn 55401, usa",44.9785783,-93.2699344
+"22","Prospect Park","June 14, 2014","319 29th Avenue
+Minneapolis, Minnesota",FALSE,"Prospect Park Station Metro Transit, Minnesota",-93.2152718,44.9715448,"prospect park, minneapolis, mn 55414, usa",44.9715448,-93.2152718
+"23","Raymond Avenue","June 14, 2014","2305 University Avenue West
+Saint Paul, Minnesota",FALSE,"Raymond Avenue Station Metro Transit, Minnesota",-93.195441,44.963091,"raymond ave, st paul, mn 55114, usa",44.963091,-93.195441
+"24","Robert Street","June 14, 2014","613 Robert Street North
+Saint Paul, Minnesota",FALSE,"Robert Street Station Metro Transit, Minnesota",-93.097507,44.954023,"robert st station, st paul, mn 55155, usa",44.954023,-93.097507
+"25","Saint Paul Union Depot","June 14, 2014","214 Fourth Street East
+Saint Paul, Minnesota
+United States",FALSE,"Saint Paul Union Depot Station Metro Transit, Minnesota",-93.0852036,44.947572,"union depot, st paul, mn 55101, usa",44.947572,-93.0852036
+"26","Snelling Avenue","June 14, 2014","1572 University Avenue West (Eastbound)
+1595 University Avenue West (Westbound)
+Saint Paul, Minnesota",FALSE,"Snelling Avenue Station Metro Transit, Minnesota",-93.1676471,44.9557241,"snelling ave station, mn-51, st paul, mn 55104, usa",44.9557241,-93.1676471
+"27","Stadium Village","June 14, 2014","2301 University Avenue
+Minneapolis, Minnesota",FALSE,"Stadium Village Station Metro Transit, Minnesota",-93.2227575,44.974772,"stadium village station, 2301 university avenue, minneapolis, mn 55414, usa",44.974772,-93.2227575
+"28","Target Field","November 14, 2009","5th Street & 3rd Avenue North
+Minneapolis, Minnesota",FALSE,"Target Field Station Metro Transit, Minnesota",-93.2770758,44.9832626,"target field station, minneapolis, mn 55401, usa",44.9832626,-93.2770758
+"29","Terminal 1 - Lindbergh","December 4, 2004","6450 Glumack Drive
+Fort Snelling, Minnesota",FALSE,"Terminal 1 - Lindbergh Station Metro Transit, Minnesota",-93.204932,44.880732,"terminal 1 lindbergh, fort snelling unorganized territory, mn 55111, usa",44.880732,-93.204932
+"30","Terminal 2 - Humphrey","December 4, 2004","7115 Humphrey Drive
+Fort Snelling, Minnesota",FALSE,"Terminal 2 - Humphrey Station Metro Transit, Minnesota",-93.224068,44.874119,"terminal 2 humphrey, fort snelling unorganized territory, mn 55111, usa",44.874119,-93.224068
+"31","U.S. Bank Stadium","June 26, 2004","429 Park Ave South
+Minneapolis, Minnesota",FALSE,"U.S. Bank Stadium Station Metro Transit, Minnesota",-93.2599181,44.9749487,"s 4th st, minneapolis, mn 55415, usa",44.9749487,-93.2599181
+"32","VA Medical Center","June 26, 2004","5504 Minnehaha Avenue
+Fort Snelling, Minnesota",FALSE,"VA Medical Center Station Metro Transit, Minnesota",-93.2022705,44.902811,"va medical center station, fort snelling unorganized territory, mn 55417, usa",44.902811,-93.2022705
+"33","Victoria Street","June 14, 2014","844 University Avenue West (Eastbound)
+875 University Avenue West (Westbound)
+Saint Paul, Minnesota",FALSE,"Victoria Street Station Metro Transit, Minnesota",-93.135578,44.95571,"victoria st station, st paul, mn 55104, usa",44.95571,-93.135578
+"34","Warehouse District / Hennepin Avenue","June 26, 2004","23 North 5th Street
+Minneapolis, Minnesota",FALSE,"Warehouse District / Hennepin Avenue Station Metro Transit, Minnesota",-93.2730954,44.9800346,"warehouse district/hennepin ave, minneapolis, mn 55401, usa",44.9800346,-93.2730954
+"35","West Bank","June 14, 2014","275 Cedar Avenue
+Minneapolis, Minnesota",FALSE,"West Bank Station Metro Transit, Minnesota",-93.2454804,44.9720649,"west bank, minneapolis, mn 55455, usa",44.9720649,-93.2454804
+"36","Western Avenue","June 14, 2014","358 University Avenue West (Eastbound)
+401 University Avenue West (Westbound)
+Saint Paul, Minnesota",FALSE,"Western Avenue Station Metro Transit, Minnesota",-94.6858998,46.729553,"minnesota, usa",44.95648,-93.17874
+"37","Westgate","June 14, 2014","2646 University Avenue West (Eastbound)
+2671 University Avenue West (Westbound)
+Saint Paul, Minnesota",FALSE,"Westgate Station Metro Transit, Minnesota",-93.2072452,44.9678536,"westgate, st paul, mn 55114, usa",44.9678536,-93.2072452
