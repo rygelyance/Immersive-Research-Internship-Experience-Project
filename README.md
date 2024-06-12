@@ -313,7 +313,7 @@ plot(pts)
 ![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
 
 ``` r
-pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 ```
 
@@ -441,7 +441,7 @@ plot(pts)
 ![](README_files/figure-commonmark/unnamed-chunk-12-1.png)
 
 ``` r
-pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 ```
 
@@ -472,7 +472,7 @@ library("tidyverse")
 #makes of list of files in that folder
 files<-dir("G:/Shared drives/2024 FIRE Light Rail/DATA/GLDAS/")
 
-for(i in 17:3288){
+for(i in 1:3288){
   r<-rast(paste0("G:/Shared drives/2024 FIRE Light Rail/DATA/GLDAS/", files[i]))
 
   names(r)

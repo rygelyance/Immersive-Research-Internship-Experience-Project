@@ -124,7 +124,7 @@ library("maptiles")
 geo <- read.csv("stations_with_locations.csv")
 
 plot(pts)
-pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 
 #writeVector(pts_buffer, "Station_Buffers.shp")
@@ -197,7 +197,7 @@ pol_pts <- vect(pol_coords, crs=crdref)
 library("maptiles")
 
 plot(pts)
-pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 
 lrc <- centroids(lr_project, inside = FALSE)
@@ -224,7 +224,7 @@ library("tidyverse")
 #makes of list of files in that folder
 files<-dir("G:/Shared drives/2024 FIRE Light Rail/DATA/GLDAS/")
 
-for(i in 17:3288){
+for(i in 1:3288){
   r<-rast(paste0("G:/Shared drives/2024 FIRE Light Rail/DATA/GLDAS/", files[i]))
 
   names(r)
