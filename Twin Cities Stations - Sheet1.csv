@@ -1,82 +1,38 @@
 Stations,Opening Dates,Address,Parking
 10th Street,"June 14, 2014","Keefe Co. Parking 10th Street Lot 215 E 10th St Downtown St Paul, MN 55101",FALSE
-30th Avenue,"December 4, 2004","8100 30th Avenue South
-Bloomington, Minnesota",TRUE
-38th Street,"June 26, 2004","2902 38th Street East
-Minneapolis, Minnesota",FALSE
-46th Street,"June 26, 2004","3660 46th Street East
-Minneapolis, Minnesota",FALSE
-50th Street / Minnehaha Park,"June 26, 2004","5010 Minnehaha Avenue
-Minneapolis, Minnesota",FALSE
-American Boulevard,"December 12, 2009","34th Avenue South & East American Boulevard
-Bloomington, Minnesota",FALSE
-Bloomington Central,"December 4, 2004","8101 31st Avenue South
-Bloomington, Minnesota",FALSE
-Capitol / Rice Street,"June 14, 2014","130 University Avenue West
-Saint Paul, Minnesota",FALSE
-Cedar-Riverside,"June 26, 2004","613 15th Avenue South
-Minneapolis, Minnesota",FALSE
-Central,"June 14, 2014","56 Fifth Street East
-Saint Paul, Minnesota",FALSE
-Dale Street,"June 14, 2014","616 University Avenue West (Eastbound)
-641 University Avenue West (Westbound)
-Saint Paul, Minnesota",FALSE
-East Bank,"June 14, 2014","551 Washington Avenue
-Minneapolis, Minnesota",FALSE
-Fairview Avenue,"June 14, 2014","1863 University Avenue West
-Saint Paul, Minnesota",FALSE
-Fort Snelling,"June 26, 2004","6053 Minnehaha Avenue
-Fort Snelling, Minnesota",TRUE
-Franklin Avenue,"June 26, 2004","1808 Franklin Avenue East
-Minneapolis, Minnesota",FALSE
-Government Plaza,"June 24, 2004","352 South 5th Street
-Minneapolis, Minnesota",FALSE
-Hamline Avenue,"June 14, 2014","1324 University Avenue West (Eastbound)
-1359 University Avenue West (Westbound)
-Saint Paul, Minnesota",FALSE
-Lake Street / Midtown,"June 26, 2004","2310 Lake Street East
-Minneapolis, Minnesota",FALSE
-Lexington Parkway,"June 14, 2014","1100 University Avenue West (Eastbound)
-1117 University Avenue West (Westbound)
-Saint Paul, Minnesota",FALSE
-Mall of America,"December 4, 2004","8240 24th Avenue South
-Bloomington, Minnesota",FALSE
-Nicollet Mall,"June 26, 2004","35 South 5th Street
-Minneapolis, Minnesota",FALSE
-Prospect Park,"June 14, 2014","319 29th Avenue
-Minneapolis, Minnesota",FALSE
-Raymond Avenue,"June 14, 2014","2305 University Avenue West
-Saint Paul, Minnesota",FALSE
-Robert Street,"June 14, 2014","613 Robert Street North
-Saint Paul, Minnesota",FALSE
-Saint Paul Union Depot,"June 14, 2014","214 Fourth Street East
-Saint Paul, Minnesota
-United States",FALSE
-Snelling Avenue,"June 14, 2014","1572 University Avenue West (Eastbound)
-1595 University Avenue West (Westbound)
-Saint Paul, Minnesota",FALSE
-Stadium Village,"June 14, 2014","2301 University Avenue
-Minneapolis, Minnesota",FALSE
-Target Field,"November 14, 2009","5th Street & 3rd Avenue North
-Minneapolis, Minnesota",FALSE
-Terminal 1 - Lindbergh,"December 4, 2004","6450 Glumack Drive
-Fort Snelling, Minnesota",FALSE
-Terminal 2 - Humphrey,"December 4, 2004","7115 Humphrey Drive
-Fort Snelling, Minnesota",FALSE
-U.S. Bank Stadium,"June 26, 2004","429 Park Ave South
-Minneapolis, Minnesota",FALSE
-VA Medical Center,"June 26, 2004","5504 Minnehaha Avenue
-Fort Snelling, Minnesota",FALSE
-Victoria Street,"June 14, 2014","844 University Avenue West (Eastbound)
-875 University Avenue West (Westbound)
-Saint Paul, Minnesota",FALSE
-Warehouse District / Hennepin Avenue,"June 26, 2004","23 North 5th Street
-Minneapolis, Minnesota",FALSE
-West Bank,"June 14, 2014","275 Cedar Avenue
-Minneapolis, Minnesota",FALSE
-Western Avenue,"June 14, 2014","358 University Avenue West (Eastbound)
-401 University Avenue West (Westbound)
-Saint Paul, Minnesota",FALSE
-Westgate,"June 14, 2014","2646 University Avenue West (Eastbound)
-2671 University Avenue West (Westbound)
-Saint Paul, Minnesota",FALSE
+30th Avenue,"December 4, 2004","8100 30th Avenue South Bloomington, Minnesota",TRUE
+38th Street,"June 26, 2004","2902 38th Street East Minneapolis, Minnesota",FALSE
+46th Street,"June 26, 2004","3660 46th Street East Minneapolis, Minnesota",FALSE
+50th Street / Minnehaha Park,"June 26, 2004","5010 Minnehaha Avenue Minneapolis, Minnesota",FALSE
+American Boulevard,"December 12, 2009","34th Avenue South & East American Boulevard Bloomington, Minnesota",FALSE
+Bloomington Central,"December 4, 2004","8101 31st Avenue South Bloomington, Minnesota",FALSE
+Capitol / Rice Street,"June 14, 2014","130 University Avenue West Saint Paul, Minnesota",FALSE
+Cedar-Riverside,"June 26, 2004","613 15th Avenue South Minneapolis, Minnesota",FALSE
+Central,"June 14, 2014","56 Fifth Street East Saint Paul, Minnesota",FALSE
+Dale Street,"June 14, 2014","616 University Avenue West (Eastbound) 641 University Avenue West (Westbound) Saint Paul, Minnesota",FALSE
+East Bank,"June 14, 2014","551 Washington Avenue Minneapolis, Minnesota",FALSE
+Fairview Avenue,"June 14, 2014","1863 University Avenue West Saint Paul, Minnesota",FALSE
+Fort Snelling,"June 26, 2004","6053 Minnehaha Avenue Fort Snelling, Minnesota",TRUE
+Franklin Avenue,"June 26, 2004","1808 Franklin Avenue East Minneapolis, Minnesota",FALSE
+Government Plaza,"June 24, 2004","352 South 5th Street Minneapolis, Minnesota",FALSE
+Hamline Avenue,"June 14, 2014","1324 University Avenue West (Eastbound) 1359 University Avenue West (Westbound) Saint Paul, Minnesota",FALSE
+Lake Street / Midtown,"June 26, 2004","2310 Lake Street East Minneapolis, Minnesota",FALSE
+Lexington Parkway,"June 14, 2014","1100 University Avenue West (Eastbound) 1117 University Avenue West (Westbound) Saint Paul, Minnesota",FALSE
+Mall of America,"December 4, 2004","8240 24th Avenue South Bloomington, Minnesota",FALSE
+Nicollet Mall,"June 26, 2004","35 South 5th Street Minneapolis, Minnesota",FALSE
+Prospect Park,"June 14, 2014","319 29th Avenue Minneapolis, Minnesota",FALSE
+Raymond Avenue,"June 14, 2014","2305 University Avenue West Saint Paul, Minnesota",FALSE
+Robert Street,"June 14, 2014","613 Robert Street North Saint Paul, Minnesota",FALSE
+Saint Paul Union Depot,"June 14, 2014","214 Fourth Street East Saint Paul, Minnesota United States",FALSE
+Snelling Avenue,"June 14, 2014","1572 University Avenue West (Eastbound) 1595 University Avenue West (Westbound) Saint Paul, Minnesota",FALSE
+Stadium Village,"June 14, 2014","2301 University Avenue Minneapolis, Minnesota",FALSE
+Target Field,"November 14, 2009","5th Street & 3rd Avenue North Minneapolis, Minnesota",FALSE
+Terminal 1 - Lindbergh,"December 4, 2004","6450 Glumack Drive Fort Snelling, Minnesota",FALSE
+Terminal 2 - Humphrey,"December 4, 2004","7115 Humphrey Drive Fort Snelling, Minnesota",FALSE
+U.S. Bank Stadium,"June 26, 2004","429 Park Ave South Minneapolis, Minnesota",FALSE
+VA Medical Center,"June 26, 2004","5504 Minnehaha Avenue Fort Snelling, Minnesota",FALSE
+Victoria Street,"June 14, 2014","844 University Avenue West (Eastbound) 875 University Avenue West (Westbound) Saint Paul, Minnesota",FALSE
+Warehouse District / Hennepin Avenue,"June 26, 2004","23 North 5th Street Minneapolis, Minnesota",FALSE
+West Bank,"June 14, 2014","275 Cedar Avenue Minneapolis, Minnesota",FALSE
+Western Avenue,"June 14, 2014","358 University Avenue West (Eastbound) 401 University Avenue West (Westbound) Saint Paul, Minnesota",FALSE
+Westgate,"June 14, 2014","2646 University Avenue West (Eastbound) 2671 University Avenue West (Westbound) Saint Paul, Minnesota",FALSE

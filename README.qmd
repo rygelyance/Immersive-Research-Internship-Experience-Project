@@ -1,0 +1,254 @@
+---
+title: "Twin Cities Station Mapping"
+format: gfm
+editor: visual
+---
+
+## Research Question
+
+Which demographic groups are impacted by light rail openings in the United States?
+
+## Research Context
+
+We're focused on the "Twin Cities", Minneapolis and St. Paul, Minnesota and the impact of the opening of the METRO Blue and METRO Green lines.
+
+Timeline: 2000-2008
+
+Hypothesis: Light rail openings decrease the pollution around stations
+
+-   Reasoning: While light rail openings gather commuters, only two of the stations have parking, so on average, the net PM2.5 pollution should in theory be lower. In addition, many of these commuters are electing to use the light rail instead of their own transportation, further contributing to a reduction in PM2.5
+
+-   Confounding Factors:
+
+    -   Power Plants
+
+    -   Recycling Centers
+
+    -   Refineries
+
+    -   Factories
+
+    -   Heating Plants
+
+    -   Paper Mills
+
+    -   Meteorological Factors
+
+```{r}
+library("knitr")
+figure1 <- read.csv("Sources of Pollution - Twin Cities - Sheet1 (2).csv")
+kable(figure1)
+```
+
+## Green & Blue Line Stations
+
+Below is a list of all 37 stations for the METRO Green and Blue Lines.
+
+```{r}
+figure2 <- read.csv("Twin Cities Stations - Sheet1.csv")
+kable(figure2)
+```
+
+## Station Information
+
+This code reads the data from csv files we created that contains the names of each station . The METRO Blue and Green lines in total have 37 stations. This file has the name of each station, their addresses, opening dates, and whether or not they have parking.
+
+```{r}
+library("tidyverse")
+library("ggmap") 
+
+station_data <- read.csv("Twin Cities Stations - Sheet1.csv") %>%
+  mutate(Station2=paste(Stations, "Station Metro Transit, Minnesota"))
+```
+
+This next segments use a Google API key in order to get the locations of each station of the light rail in latitude/longitude coordinates, then fixes a few select points where the Google API failed to get a precise location.
+
+```{r}
+#| eval: false
+register_google(key = "GoogleAPIKey", write = TRUE)
+
+addr.geo <- mutate_geocode(station_data, location = Station2, output = "latlona")
+```
+
+```{r}
+#| eval: false
+geo <- addr.geo %>%
+  mutate(lat2 = ifelse(address=="bloomington, mn, usa", 44.85639, lat)) %>%
+  mutate(lon2 = ifelse(address=="bloomington, mn, usa", -93.22628, lon)) %>%
+  mutate(lat2 = ifelse(address=="minnesota, usa", 44.95648, lat2)) %>%
+  mutate(lon2 = ifelse(address=="minnesota, usa", -93.17874, lon2)) %>%
+  mutate(lat2 = ifelse(Station2=="Western Avenue station Metro Transit, Minnesota", 44.95586, lat2)) %>%
+  mutate(lon2 = ifelse(Station2=="Western Avenue station Metro Transit, Minnesota", -93.11708, lon2))
+
+```
+
+## Plotting the Stations
+
+This next code segment plots each of the station locations (in latitude/longitude) we extracted in the previous stage
+
+```{r}
+library("terra")
+geo <- read.csv("stations_with_locations.csv")
+
+sample_coords <- cbind(geo$lon2, geo$lat2)
+lr_stations <- vect(sample_coords)
+geom(lr_stations)
+crdref <- "+proj=longlat +datum=WGS84"
+pts <- vect(sample_coords, crs=crdref)
+plot(pts)
+
+```
+
+## Plotting the Stations (Part 2)
+
+This section plots the station locations as a set of polygons
+
+```{r}
+point_map <- vect(sample_coords, type = "points", crs = crdref)
+point_map
+plot(point_map)
+pols <- vect(sample_coords, type = "polygons", crs = crdref)
+pols
+plot(pols)
+plot(pols, border = "blue", col = "yellow", lwd=2)
+points(x = sample_coords, col = "red", pch = 20, cex = 1)
+```
+
+## Plotting the Stations (Part 3)
+
+This code chunk displays the station locations on top of a real map with a 1km buffer circle around each station location.
+
+```{r}
+library("terra")
+library("maptiles")
+geo <- read.csv("stations_with_locations.csv")
+
+plot(pts)
+pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+plot(pts_buffer)
+
+#writeVector(pts_buffer, "Station_Buffers.shp")
+
+tc_lr <- vect("lr_1km_buff/lr_1km_buff.shp")
+tc_lr_line <- aggregate(tc_lr, dissolve = TRUE)
+lr_project <- project(tc_lr_line, "+proj=longlat + ellps = WGS84 +datum = WGS84 + nodefs")
+
+lrc <- centroids(lr_project, inside = FALSE)
+
+pts_buffer1 <- buffer(lrc, width = 10000)
+extent <- buffer(pts, width = 600)
+
+bg <- get_tiles(ext(extent))
+plot(bg)
+points(pts)
+lines(pts_buffer1, col = "blue")
+lines(pts_buffer, col = "red")
+```
+
+## Find Sources of Pollution near Light Rail Routes and its Addresses
+
+This file has the name of each factory, their addresses, opening dates, and whether or not they have parking.
+
+```{r}
+library("tidyverse")
+library("ggmap") 
+
+factory_data <- read.csv("Sources of Pollution - Twin Cities - Sheet1 (2).csv") %>%
+  mutate(Factory2=paste(Factories, "Factory, Minnesota"))
+```
+
+This next segments use a Google API key in order to get the locations of each station of the light rail in latitude/longitude coordinates, then fixes a few select points where the Google API failed to get a precise location.
+
+```{r}
+#| eval: false
+register_google(key = "GoogleAPIKey", write = TRUE)
+
+addr.geo <- mutate_geocode(factory_data, location = Factory2, output = "latlona")
+```
+
+```{r}
+#| eval: false
+geo2 <- addr.geo %>%
+  mutate(lat2 = ifelse(Factories=="Flint Hills Resources Line Bend Refinery, Rosemount, MN", 44.76432, lat)) %>%
+  mutate(lon2 = ifelse(Factories=="Flint Hills Resources Line Bend Refinery, Rosemount, MN", -93.03947, lon)) %>%
+  mutate(lat2 = ifelse(Factories=="Koch Industries (Flint Hills Resources), Rosemount, MN", 44.76424, lat2)) %>%
+  mutate(lon2 = ifelse(Factories=="Koch Industries (Flint Hills Resources), Rosemount, MN", -93.03943, lon2))
+
+write.csv(geo2, "pollution_locations.csv")
+```
+
+## Plotting the Factory Sources of Pollution
+
+```{r}
+library("terra")
+geo <- read.csv("stations_with_locations.csv")
+geo2 <- read.csv("pollution_locations.csv")
+
+sample_coords <- cbind(geo$lon2, geo$lat2)
+lr_stations <- vect(sample_coords)
+geom(lr_stations)
+crdref <- "+proj=longlat +datum=WGS84"
+pts <- vect(sample_coords, crs=crdref)
+
+pol_coords <- cbind(geo2$lon2, geo2$lat2)
+crdref <- "+proj=longlat +datum=WGS84"
+pol_pts <- vect(pol_coords, crs=crdref)
+
+library("maptiles")
+
+plot(pts)
+pts_buffer <- buffer(pts, width = 1000) # Width is measured in meters
+plot(pts_buffer)
+
+lrc <- centroids(lr_project, inside = FALSE)
+
+pts_buffer1 <- buffer(lrc, width = 10000)
+extent <- buffer(pts, width = 600)
+
+bg <- get_tiles(ext(extent))
+plot(bg)
+points(pts)
+points(pol_pts, col = "purple", cex = 1.5)
+lines(pts_buffer1, col = "blue")
+lines(pts_buffer, col = "red")
+```
+
+## Plotting Meteorology Data
+
+```{r}
+#| eval: false
+
+library("terra")
+library("tidyverse")
+
+#makes of list of files in that folder
+files<-dir("G:/Shared drives/2024 FIRE Light Rail/DATA/GLDAS/")
+
+for(i in 17:3288){
+  r<-rast(paste0("G:/Shared drives/2024 FIRE Light Rail/DATA/GLDAS/", files[i]))
+
+  names(r)
+  #variables in page 19 of manual
+  #https://hydro1.gesdisc.eosdis.nasa.gov/data/GLDAS/GLDAS_CLSM025_D.2.0/doc       /README_GLDAS2.pdf
+  #Snowf_tavg<-r[[6]]
+  #plot(Snowf_tavg)
+
+  station_buffers<-vect("Station_Buffers.shp")
+
+  #crops raster to contain only buffers around stations
+  int<-crop(r, station_buffers,
+            snap="in",
+            mask=TRUE)
+  plot(int)
+
+  #convert cropped raster into dataframe and find average value
+  metdf<-terra::extract(int, sta, fun="mean", na.rm=TRUE)  %>% 
+    summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE))) %>%
+    select(-ID)
+
+  metdf$date<-files[i]
+  
+  write.csv(metdf, paste0("TC_Meteorology_Data/", files[i],".csv"), row.names = F)
+
+}
+```
