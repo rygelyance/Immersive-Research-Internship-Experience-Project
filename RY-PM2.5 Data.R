@@ -26,7 +26,7 @@ for (m in 1:length(months)) {
     print(days[d])
 
     #read tif file
-    r<-rast(paste0(path, months[m], "/", days[1]))
+    r<-rast(paste0(path, months[m], "/", days[d]))
 
     #changes the crs system
     buffer_project<-terra::project(pts_buffer,  crs(r))
@@ -44,7 +44,7 @@ for (m in 1:length(months)) {
     names(cntrl_df)<-c("station_num","pm25")
 
     #create a dataframe date, shape index, and pm25
-    output <- as.data.frame(c("date"=days[1], cntrl_df))
+    output <- as.data.frame(c("date"=days[d], cntrl_df))
 
     #combine output with previous loop
     days_output<-rbind(days_output, output)

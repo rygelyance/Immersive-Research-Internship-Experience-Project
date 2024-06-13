@@ -127,7 +127,7 @@ plot(pts)
 pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 
-#writeVector(pts_buffer, "Station_Buffers.shp")
+writeVector(pts_buffer, "Station_Buffers.shp")
 
 tc_lr <- vect("lr_1km_buff/lr_1km_buff.shp")
 tc_lr_line <- aggregate(tc_lr, dissolve = TRUE)
