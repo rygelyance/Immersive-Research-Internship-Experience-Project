@@ -10,7 +10,7 @@ lr_stations <- vect(sample_coords)
 geom(lr_stations)
 crdref <- "+proj=longlat +datum=WGS84"
 pts <- vect(sample_coords, crs=crdref)
-pts_buffer <- buffer(pts, width = 500) #TEMPORARY, DO NOT USE UNTIL FINALIZED!
+pts_buffer <- buffer(pts, width = 500)
 
 
 path<-"G:/Shared drives/2024 FIRE Light Rail/DATA/PM25/"
