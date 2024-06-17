@@ -252,3 +252,18 @@ for(i in 1:3288){
 
 }
 ```
+
+## Plotting PM2.5 of the different stations over time
+
+This code plots the PM2.5 on each date for each station in order to determine which stations should be excluded from the data for being outliers.
+
+```{r}
+library(ggplot2)
+
+all_data = read.csv("Mega_Dataframe.csv")
+truncated_data = head(all_data, 5000)
+
+ggplot(data = all_data, aes(x = station_num, y = pm25)) +
+  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
+  ylim(0, 25)
+```
