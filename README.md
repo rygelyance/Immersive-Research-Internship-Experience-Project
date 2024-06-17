@@ -511,7 +511,4 @@ ggplot(data = all_data, aes(x = station_num, y = pm25)) +
   ylim(0, 25)
 ```
 
-    Warning: Removed 5381 rows containing non-finite outside the scale range
-    (`stat_boxplot()`).
-
 ![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
