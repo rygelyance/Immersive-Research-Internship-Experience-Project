@@ -119,10 +119,10 @@ library("tidyverse")
 ```
 
     ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-    ✔ dplyr     1.1.3     ✔ readr     2.1.4
-    ✔ forcats   1.0.0     ✔ stringr   1.5.0
-    ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
-    ✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+    ✔ dplyr     1.1.4     ✔ readr     2.1.5
+    ✔ forcats   1.0.0     ✔ stringr   1.5.1
+    ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+    ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
     ✔ purrr     1.0.2     
     ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ✖ dplyr::filter() masks stats::filter()
@@ -132,8 +132,6 @@ library("tidyverse")
 ``` r
 library("ggmap") 
 ```
-
-    Warning: package 'ggmap' was built under R version 4.3.3
 
     ℹ Google's Terms of Service: <https://mapsplatform.google.com>
       Stadia Maps' Terms of Service: <https://stadiamaps.com/terms-of-service/>
@@ -175,7 +173,7 @@ latitude/longitude) we extracted in the previous stage
 library("terra")
 ```
 
-    terra 1.7.46
+    terra 1.7.78
 
 
     Attaching package: 'terra'
@@ -300,11 +298,6 @@ a 1km buffer circle around each station location.
 ``` r
 library("terra")
 library("maptiles")
-```
-
-    Warning: package 'maptiles' was built under R version 4.3.3
-
-``` r
 geo <- read.csv("stations_with_locations.csv")
 
 plot(pts)
@@ -500,3 +493,25 @@ for(i in 1:3288){
 
 }
 ```
+
+## Plotting PM2.5 of the different stations over time
+
+This code plots the PM2.5 on each date for each station in order to
+determine which stations should be excluded from the data for being
+outliers.
+
+``` r
+library(ggplot2)
+
+all_data = read.csv("Mega_Dataframe.csv")
+truncated_data = head(all_data, 5000)
+
+ggplot(data = all_data, aes(x = station_num, y = pm25)) +
+  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
+  ylim(0, 25)
+```
+
+    Warning: Removed 5381 rows containing non-finite outside the scale range
+    (`stat_boxplot()`).
+
+![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
