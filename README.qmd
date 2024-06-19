@@ -35,6 +35,8 @@ Hypothesis: Light rail openings decrease the pollution around stations
     -   Meteorological Factors
 
 ```{r}
+#| warning: false
+#| message: false
 library("knitr")
 figure1 <- read.csv("Sources of Pollution - Twin Cities - Sheet1 (2).csv")
 kable(figure1)
@@ -54,6 +56,8 @@ kable(figure2)
 This code reads the data from csv files we created that contains the names of each station . The METRO Blue and Green lines in total have 37 stations. This file has the name of each station, their addresses, opening dates, and whether or not they have parking.
 
 ```{r}
+#| warning: false
+#| message: false
 library("tidyverse")
 library("ggmap") 
 
@@ -101,33 +105,17 @@ plot(pts)
 
 ## Plotting the Stations (Part 2)
 
-This section plots the station locations as a set of polygons
-
-```{r}
-point_map <- vect(sample_coords, type = "points", crs = crdref)
-point_map
-plot(point_map)
-pols <- vect(sample_coords, type = "polygons", crs = crdref)
-pols
-plot(pols)
-plot(pols, border = "blue", col = "yellow", lwd=2)
-points(x = sample_coords, col = "red", pch = 20, cex = 1)
-```
-
-## Plotting the Stations (Part 3)
-
-This code chunk displays the station locations on top of a real map with a 1km buffer circle around each station location.
+This code chunk displays the station locations on top of a real map with a 500m buffer circle around each station location. These buffers and their sizes are to help to later extract the average PM2.5 and control data for each of the stations individually while limiting the influence of potential other sources of PM2.5 as well as overlap with other stations.
 
 ```{r}
 library("terra")
 library("maptiles")
 geo <- read.csv("stations_with_locations.csv")
 
-plot(pts)
 pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 
-writeVector(pts_buffer, "Station_Buffers.shp")
+#writeVector(pts_buffer, "Station_Buffers.shp")
 
 tc_lr <- vect("lr_1km_buff/lr_1km_buff.shp")
 tc_lr_line <- aggregate(tc_lr, dissolve = TRUE)
@@ -258,6 +246,7 @@ for(i in 1:3288){
 This code plots the PM2.5 on each date for each station in order to determine which stations should be excluded from the data for being outliers.
 
 ```{r}
+#| warning: false
 library(ggplot2)
 
 all_data = read.csv("Mega_Dataframe.csv")

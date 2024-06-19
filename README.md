@@ -116,29 +116,8 @@ opening dates, and whether or not they have parking.
 
 ``` r
 library("tidyverse")
-```
-
-    ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-    ✔ dplyr     1.1.4     ✔ readr     2.1.5
-    ✔ forcats   1.0.0     ✔ stringr   1.5.1
-    ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-    ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
-    ✔ purrr     1.0.2     
-    ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-    ✖ dplyr::filter() masks stats::filter()
-    ✖ dplyr::lag()    masks stats::lag()
-    ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-
-``` r
 library("ggmap") 
-```
 
-    ℹ Google's Terms of Service: <https://mapsplatform.google.com>
-      Stadia Maps' Terms of Service: <https://stadiamaps.com/terms-of-service/>
-      OpenStreetMap's Tile Usage Policy: <https://operations.osmfoundation.org/policies/tiles/>
-    ℹ Please cite ggmap if you use it! Use `citation("ggmap")` for details.
-
-``` r
 station_data <- read.csv("Twin Cities Stations - Sheet1.csv") %>%
   mutate(Station2=paste(Stations, "Station Metro Transit, Minnesota"))
 ```
@@ -247,70 +226,23 @@ plot(pts)
 
 ## Plotting the Stations (Part 2)
 
-This section plots the station locations as a set of polygons
-
-``` r
-point_map <- vect(sample_coords, type = "points", crs = crdref)
-point_map
-```
-
-     class       : SpatVector 
-     geometry    : points 
-     dimensions  : 37, 0  (geometries, attributes)
-     extent      : -93.27708, -93.0852, 44.85512, 44.98326  (xmin, xmax, ymin, ymax)
-     coord. ref. : +proj=longlat +datum=WGS84 +no_defs 
-
-``` r
-plot(point_map)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-7-1.png)
-
-``` r
-pols <- vect(sample_coords, type = "polygons", crs = crdref)
-pols
-```
-
-     class       : SpatVector 
-     geometry    : polygons 
-     dimensions  : 1, 0  (geometries, attributes)
-     extent      : -93.27708, -93.0852, 44.85512, 44.98326  (xmin, xmax, ymin, ymax)
-     coord. ref. : +proj=longlat +datum=WGS84 +no_defs 
-
-``` r
-plot(pols)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-7-2.png)
-
-``` r
-plot(pols, border = "blue", col = "yellow", lwd=2)
-points(x = sample_coords, col = "red", pch = 20, cex = 1)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-7-3.png)
-
-## Plotting the Stations (Part 3)
-
 This code chunk displays the station locations on top of a real map with
-a 1km buffer circle around each station location.
+a 500m buffer circle around each station location. These buffers and
+their sizes are to help to later extract the average PM2.5 and control
+data for each of the stations individually while limiting the influence
+of potential other sources of PM2.5 as well as overlap with other
+stations.
 
 ``` r
 library("terra")
 library("maptiles")
 geo <- read.csv("stations_with_locations.csv")
 
-plot(pts)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
-
-``` r
 pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-8-2.png)
+![](README_files/figure-commonmark/unnamed-chunk-7-1.png)
 
 ``` r
 #writeVector(pts_buffer, "Station_Buffers.shp")
@@ -331,7 +263,7 @@ lines(pts_buffer1, col = "blue")
 lines(pts_buffer, col = "red")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-8-3.png)
+![](README_files/figure-commonmark/unnamed-chunk-7-2.png)
 
 ## Find Sources of Pollution near Light Rail Routes and its Addresses
 
@@ -431,14 +363,14 @@ library("maptiles")
 plot(pts)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-12-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
 
 ``` r
 pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
 plot(pts_buffer)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-12-2.png)
+![](README_files/figure-commonmark/unnamed-chunk-11-2.png)
 
 ``` r
 lrc <- centroids(lr_project, inside = FALSE)
@@ -454,7 +386,7 @@ lines(pts_buffer1, col = "blue")
 lines(pts_buffer, col = "red")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-12-3.png)
+![](README_files/figure-commonmark/unnamed-chunk-11-3.png)
 
 ## Plotting Meteorology Data
 
@@ -511,4 +443,4 @@ ggplot(data = all_data, aes(x = station_num, y = pm25)) +
   ylim(0, 25)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-13-1.png)
