@@ -150,26 +150,6 @@ latitude/longitude) we extracted in the previous stage
 
 ``` r
 library("terra")
-```
-
-    terra 1.7.78
-
-
-    Attaching package: 'terra'
-
-    The following object is masked from 'package:ggmap':
-
-        inset
-
-    The following object is masked from 'package:tidyr':
-
-        extract
-
-    The following object is masked from 'package:knitr':
-
-        spin
-
-``` r
 geo <- read.csv("stations_with_locations.csv")
 
 sample_coords <- cbind(geo$lon2, geo$lat2)

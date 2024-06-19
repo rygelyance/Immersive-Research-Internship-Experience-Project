@@ -91,6 +91,8 @@ geo <- addr.geo %>%
 This next code segment plots each of the station locations (in latitude/longitude) we extracted in the previous stage
 
 ```{r}
+#| warning: false
+#| message: false
 library("terra")
 geo <- read.csv("stations_with_locations.csv")
 
