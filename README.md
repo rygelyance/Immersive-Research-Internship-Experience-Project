@@ -216,6 +216,11 @@ stations.
 ``` r
 library("terra")
 library("maptiles")
+```
+
+    Warning: package 'maptiles' was built under R version 4.3.3
+
+``` r
 geo <- read.csv("stations_with_locations.csv")
 
 pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
@@ -406,21 +411,219 @@ for(i in 1:3288){
 }
 ```
 
+## Combining the data
+
+This code combines all of the previous data we’ve gathered into a single
+dataframe, along with adding in some additional variables. This
+dataframe includes each station name, each station id, the date, PM2.5,
+meteorological variables, the month, day of the week, and whether or not
+the day is a holiday.
+
+``` r
+library("dplyr")
+library("data.table")
+path<-"C:/Users/rygel/Documents/team-twin-cities/TC_Meteorology_Data/"
+days<-dir(path) #makes a vector of folder names
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/TC_Meteorology_Data/")
+
+combined_files <- bind_rows(lapply(days, fread))
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/")
+
+write.csv(combined_files, "Full_Meteorology_Data.csv")
+
+stations <- read.csv("Station Names and IDs.csv")
+
+path<-"C:/Users/rygel/Documents/team-twin-cities/Twin_Cities_PM25/"
+months<-dir(path) #makes a vector of folder names
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/Twin_Cities_PM25/")
+
+
+combined_files <- bind_rows(lapply(months, fread))
+
+write.csv(combined_files, "Full_PM25_Data.csv", row.names = F)
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/")
+
+PM25 <- read.csv("Full_PM25_Data.csv")
+Holidays <- read.csv("major_holidays_2000_2025.csv")
+Holidays = subset(Holidays, select = -year)
+Weather <- read.csv("Full_Meteorology_Data.csv")
+Weather = subset(Weather, select = -X)
+Weather = subset(Weather, select = -V1)
+stations = read.csv("Station Names and IDs.csv")
+
+weather_fixed_date <- Weather %>%
+  mutate(date = stringr::str_extract(date, "[0-9]{4}[0-9]{2}[0-9]{2}")) %>%
+  mutate(date = paste(substr(date, 1, 4), "-", substr(date, 5, 6), "-", substr(date, 7, nchar(date)), sep = ""))
+
+pm25_fixed_date <- PM25 %>%
+  mutate(date = stringr::str_extract(date, "[0-9]{4}[0-9]{2}[0-9]{2}")) %>%
+  mutate(date = paste(substr(date, 1, 4), "-", substr(date, 5, 6), "-", substr(date, 7, nchar(date)), sep = ""))
+
+pm25_stations = merge(pm25_fixed_date, stations, by = "station_num")
+
+add_weather = merge(pm25_stations, weather_fixed_date, by = "date", all.x = TRUE, all.y = FALSE)
+
+add_holidays = merge(add_weather, Holidays, by = "date", all.x = TRUE, all.y = FALSE)
+
+full_fixed_cols <- add_holidays %>%
+  mutate(holiday = ifelse(is.na(holiday), FALSE, TRUE)) %>%
+  mutate(day_of_week = weekdays(as.Date(date))) %>%
+  mutate(month = months(as.Date(date)))
+
+date_stations_sorted <- full_fixed_cols[order(full_fixed_cols$date, full_fixed_cols$station_num),]
+
+write.csv(date_stations_sorted, "Mega_Dataframe.csv", row.names = F)
+```
+
 ## Plotting PM2.5 of the different stations over time
 
-This code plots the PM2.5 on each date for each station in order to
-determine which stations should be excluded from the data for being
-outliers.
+This code plots a boxplot for the PM2.5 on each date from 2000-2008 for
+each station as well as finds the differences in average PM2.5 before
+and after the opening of the METRO Blue Line on June 14th, 2004. Using
+this data as well as factoring in parking and other pollution sources,
+we have decided to remove stations 1, 16, 28, and 34 from our data.
 
 ``` r
 library(ggplot2)
 
 all_data = read.csv("Mega_Dataframe.csv")
-truncated_data = head(all_data, 5000)
+half_data = head(all_data, 120398)
+truncated_data = head(all_data, 60199)
+truncated_data2 = head(tail(all_data, -60199), 60199)
 
-ggplot(data = all_data, aes(x = station_num, y = pm25)) +
+ggplot(data = half_data, aes(x = station_num, y = pm25)) +
   geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
   ylim(0, 25)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-13-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
+
+``` r
+ggplot(data = truncated_data, aes(x = station_num, y = pm25)) +
+  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
+  ylim(0, 25)
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-14-2.png)
+
+``` r
+ggplot(data = truncated_data2, aes(x = station_num, y = pm25)) +
+  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
+  ylim(0, 25)
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-14-3.png)
+
+``` r
+before_mean<- aggregate(x=truncated_data$pm25,
+                      # Specify group indicator
+                      by = list(truncated_data$station_num),      
+                      # Specify function (i.e. mean)
+                      FUN = mean)
+print(before_mean)
+```
+
+       Group.1        x
+    1        1 12.09726
+    2        2 10.79461
+    3        3 10.91249
+    4        4 10.89401
+    5        5 10.87087
+    6        6 10.79461
+    7        7 10.79461
+    8        8 11.33500
+    9        9 11.54214
+    10      10 12.09726
+    11      11 11.61614
+    12      12 11.43106
+    13      13 11.36858
+    14      14 10.91020
+    15      15 11.49296
+    16      16 10.38051
+    17      17 11.31915
+    18      18 11.13391
+    19      19 11.42066
+    20      20 10.60747
+    21      21 10.38051
+    22      22 11.52329
+    23      23 11.29416
+    24      24 12.03742
+    25      25 12.02272
+    26      26 11.27738
+    27      27 11.44644
+    28      28 10.38051
+    29      29 11.11829
+    30      30 10.82124
+    31      31 11.17027
+    32      32 10.87614
+    33      33 11.43159
+    34      34 10.38051
+    35      35 11.50746
+    36      36 11.36858
+    37      37 11.04237
+
+``` r
+after_mean<- aggregate(x=truncated_data2$pm25,
+                      # Specify group indicator
+                      by = list(truncated_data2$station_num),      
+                      # Specify function (i.e. mean)
+                      FUN = mean)
+print(after_mean)
+```
+
+       Group.1        x
+    1        1 11.64811
+    2        2 10.40152
+    3        3 10.22335
+    4        4 10.50410
+    5        5 10.84584
+    6        6 10.40152
+    7        7 10.40152
+    8        8 10.89597
+    9        9 11.18554
+    10      10 11.64811
+    11      11 11.02539
+    12      12 10.89726
+    13      13 10.88296
+    14      14 10.99503
+    15      15 10.98797
+    16      16 10.49803
+    17      17 10.84544
+    18      18 10.42011
+    19      19 10.78668
+    20      20 10.03148
+    21      21 10.49803
+    22      22 11.05676
+    23      23 10.82675
+    24      24 11.44612
+    25      25 11.53627
+    26      26 10.82075
+    27      27 10.97957
+    28      28 10.49803
+    29      29 11.25919
+    30      30 10.56495
+    31      31 10.86789
+    32      32 11.00663
+    33      33 10.84038
+    34      34 10.49803
+    35      35 10.94402
+    36      36 10.88296
+    37      37 10.62504
+
+``` r
+b = before_mean$x
+a = after_mean$x
+print(a-b)
+```
+
+     [1] -0.44914271 -0.39309537 -0.68913994 -0.38990957 -0.02502317 -0.39309537
+     [7] -0.39309537 -0.43902811 -0.35660272 -0.44914271 -0.59074737 -0.53380133
+    [13] -0.48561347  0.08482476 -0.50498776  0.11752862 -0.47370918 -0.71379870
+    [19] -0.63398636 -0.57599092  0.11752862 -0.46652529 -0.46741556 -0.59129455
+    [25] -0.48644745 -0.45662643 -0.46687029  0.11752862  0.14090148 -0.25628933
+    [31] -0.30237809  0.13049445 -0.59121732  0.11752862 -0.56344091 -0.48561347
+    [37] -0.41732675

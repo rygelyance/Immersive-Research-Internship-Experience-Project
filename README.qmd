@@ -243,18 +243,115 @@ for(i in 1:3288){
 }
 ```
 
+## Combining the data
+
+This code combines all of the previous data we've gathered into a single dataframe, along with adding in some additional variables. This dataframe includes each station name, each station id, the date, PM2.5, meteorological variables, the month, day of the week, and whether or not the day is a holiday.
+
+```{r}
+#| warning: false
+#| message: false
+#| eval: false
+
+library("dplyr")
+library("data.table")
+path<-"C:/Users/rygel/Documents/team-twin-cities/TC_Meteorology_Data/"
+days<-dir(path) #makes a vector of folder names
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/TC_Meteorology_Data/")
+
+combined_files <- bind_rows(lapply(days, fread))
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/")
+
+write.csv(combined_files, "Full_Meteorology_Data.csv")
+
+stations <- read.csv("Station Names and IDs.csv")
+
+path<-"C:/Users/rygel/Documents/team-twin-cities/Twin_Cities_PM25/"
+months<-dir(path) #makes a vector of folder names
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/Twin_Cities_PM25/")
+
+
+combined_files <- bind_rows(lapply(months, fread))
+
+write.csv(combined_files, "Full_PM25_Data.csv", row.names = F)
+
+setwd("C:/Users/rygel/Documents/team-twin-cities/")
+
+PM25 <- read.csv("Full_PM25_Data.csv")
+Holidays <- read.csv("major_holidays_2000_2025.csv")
+Holidays = subset(Holidays, select = -year)
+Weather <- read.csv("Full_Meteorology_Data.csv")
+Weather = subset(Weather, select = -X)
+Weather = subset(Weather, select = -V1)
+stations = read.csv("Station Names and IDs.csv")
+
+weather_fixed_date <- Weather %>%
+  mutate(date = stringr::str_extract(date, "[0-9]{4}[0-9]{2}[0-9]{2}")) %>%
+  mutate(date = paste(substr(date, 1, 4), "-", substr(date, 5, 6), "-", substr(date, 7, nchar(date)), sep = ""))
+
+pm25_fixed_date <- PM25 %>%
+  mutate(date = stringr::str_extract(date, "[0-9]{4}[0-9]{2}[0-9]{2}")) %>%
+  mutate(date = paste(substr(date, 1, 4), "-", substr(date, 5, 6), "-", substr(date, 7, nchar(date)), sep = ""))
+
+pm25_stations = merge(pm25_fixed_date, stations, by = "station_num")
+
+add_weather = merge(pm25_stations, weather_fixed_date, by = "date", all.x = TRUE, all.y = FALSE)
+
+add_holidays = merge(add_weather, Holidays, by = "date", all.x = TRUE, all.y = FALSE)
+
+full_fixed_cols <- add_holidays %>%
+  mutate(holiday = ifelse(is.na(holiday), FALSE, TRUE)) %>%
+  mutate(day_of_week = weekdays(as.Date(date))) %>%
+  mutate(month = months(as.Date(date)))
+
+date_stations_sorted <- full_fixed_cols[order(full_fixed_cols$date, full_fixed_cols$station_num),]
+
+write.csv(date_stations_sorted, "Mega_Dataframe.csv", row.names = F)
+```
+
 ## Plotting PM2.5 of the different stations over time
 
-This code plots the PM2.5 on each date for each station in order to determine which stations should be excluded from the data for being outliers.
+This code plots a boxplot for the PM2.5 on each date from 2000-2008 for each station as well as finds the differences in average PM2.5 before and after the opening of the METRO Blue Line on June 14th, 2004. Using this data as well as factoring in parking and other pollution sources, we have decided to remove stations 1, 16, 28, and 34 from our data.
 
 ```{r}
 #| warning: false
 library(ggplot2)
 
 all_data = read.csv("Mega_Dataframe.csv")
-truncated_data = head(all_data, 5000)
+half_data = head(all_data, 120398)
+truncated_data = head(all_data, 60199)
+truncated_data2 = head(tail(all_data, -60199), 60199)
 
-ggplot(data = all_data, aes(x = station_num, y = pm25)) +
+ggplot(data = half_data, aes(x = station_num, y = pm25)) +
   geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
   ylim(0, 25)
+
+ggplot(data = truncated_data, aes(x = station_num, y = pm25)) +
+  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
+  ylim(0, 25)
+
+ggplot(data = truncated_data2, aes(x = station_num, y = pm25)) +
+  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
+  ylim(0, 25)
+
+before_mean<- aggregate(x=truncated_data$pm25,
+                      # Specify group indicator
+                      by = list(truncated_data$station_num),      
+                      # Specify function (i.e. mean)
+                      FUN = mean)
+print(before_mean)
+
+after_mean<- aggregate(x=truncated_data2$pm25,
+                      # Specify group indicator
+                      by = list(truncated_data2$station_num),      
+                      # Specify function (i.e. mean)
+                      FUN = mean)
+print(after_mean)
+
+b = before_mean$x
+a = after_mean$x
+print(a-b)
+
 ```
