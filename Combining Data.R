@@ -49,8 +49,9 @@ add_holidays = merge(add_weather, Holidays, by = "date", all.x = TRUE, all.y = F
 
 full_fixed_cols <- add_holidays %>%
   mutate(holiday = ifelse(is.na(holiday), FALSE, TRUE)) %>%
-  mutate(day_of_week = weekdays(as.Date(date)))
+  mutate(day_of_week = weekdays(as.Date(date))) %>%
+  mutate(month = months(as.Date(date)))
 
 date_stations_sorted <- full_fixed_cols[order(full_fixed_cols$date, full_fixed_cols$station_num),]
 
-write.csv(date_stations_sorted, "Mega_Dataframe.csv")
+write.csv(date_stations_sorted, "Mega_Dataframe.csv", row.names = F)
