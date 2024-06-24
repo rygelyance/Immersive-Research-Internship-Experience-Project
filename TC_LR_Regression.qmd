@@ -1,0 +1,69 @@
+---
+title: "TC Light Rail Analysis"
+format: html
+editor: visual
+---
+
+## DB-OLS
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library("tidyverse")
+```
+
+You can add options to executable code like this
+
+```{r}
+df <- read.csv("Mega_Dataframe.csv")
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+df2 <- df %>%
+  mutate(date = as.Date(date, format = '%Y-%m-%d'))
+```
+
+```{r}
+# Period of Analysis
+startdate <- as.Date("2000-06-01", format = '%Y-%m-%d')
+enddate <- as.Date("2008-06-01", format = '%Y-%m-%d')
+opendate <- as.Date("2004-06-14", format = "%Y-%m-%d")
+conststart <- as.Date("2001-01-17", format = "%Y-%m-%d")
+
+```
+
+```{r}
+df3 <- df2 %>%
+  filter(date>=startdate & date <= enddate) %>%
+  mutate(MetroOpen = ifelse(date >= opendate, 1, 0)) %>%
+  mutate(dow = wday(date)) %>%
+  mutate(construction = ifelse(date > conststart & date < opendate, 1, 0)) %>%
+  group_by(station_num) %>%
+  arrange(station_num, date) %>%
+  mutate(l_tair = lag(Tair_f_tavg)) %>%
+  mutate(l_tair_2 = lag(l_tair)) %>%
+  mutate(l_tair_3 = lag(l_tair_2)) %>%
+  mutate(l_tair_4 = lag(l_tair_3)) %>%
+  mutate(l_qair = lag(Qair_f_tavg)) %>%
+  mutate(l_qair_2 = lag(l_qair)) %>%
+  mutate(l_qair_3 = lag(l_qair_2)) %>%
+  mutate(l_qair_4 = lag(l_qair_3)) %>%
+  mutate(l_wind = lag(Wind_f_tavg)) %>%
+  mutate(l_wind_2 = lag(l_wind)) %>%
+  mutate(l_wind_3 = lag(l_wind_2)) %>%
+  mutate(l_wind_4 = lag(l_wind_3))
+```
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen, data = df3))
+
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg + 
+                   Qair_f_tavg +
+                   Wind_f_tavg +
+                   as.factor(dow)
+                   , data = df3))
+```
