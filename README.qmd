@@ -628,6 +628,24 @@ summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    , data = df4))
 ```
 
+## Timeline
+
+This graph shows the average PM2.5 across all 37 stations over time along with relevant events plotted as vertical lines.
+
+```{r}
+df5 <- df3 %>%
+  group_by(date) %>%
+  summarise(pm25 = mean(pm25))
+ggplot(data = df5, aes(x = date, y = pm25)) +
+  geom_line(col = "lightblue") +
+  geom_vline(aes(xintercept = opendate, col = "Opening Date")) + 
+  geom_vline(aes(xintercept = conststart, col = "Construction Date")) + 
+  geom_vline(aes(xintercept = CA_Init, col = "CA")) +
+  geom_vline(aes(xintercept = HD_Engine, col = "HD")) +
+  geom_vline(aes(xintercept = MC_Reduction, col = "MC")) +
+  geom_vline(aes(xintercept = NG_Energy, col = "NG"))
+```
+
 ## References
 
 Sources of Data
