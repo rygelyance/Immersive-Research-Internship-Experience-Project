@@ -34,6 +34,8 @@ Hypothesis: Light rail openings decrease the pollution around stations
 
     -   Meteorological Factors
 
+    -   Local/Federal/State Policies
+
 ```{r}
 #| warning: false
 #| message: false
@@ -355,3 +357,348 @@ a = after_mean$x
 print(a-b)
 
 ```
+
+## Setting Relevant Dates
+
+The following code sets a list of dates for the relevant start and end dates for the period of interest (June 2000 - June 2008), the opening of the Metro Blue Line, the date when construction on the Blue Line began, and a list of dates when relevant policies that might impact the level of PM2.5 were enacted.
+
+```{r}
+#| warning: false
+#| message: false
+library("tidyverse")
+```
+
+```{r}
+df <- read.csv("Mega_Dataframe.csv")
+```
+
+```{r}
+df2 <- df %>%
+  mutate(date = as.Date(date, format = '%Y-%m-%d'))
+```
+
+```{r}
+# Period of Analysis
+startdate <- as.Date("2000-06-01", format = '%Y-%m-%d')
+enddate <- as.Date("2008-06-01", format = '%Y-%m-%d')
+opendate <- as.Date("2004-06-14", format = "%Y-%m-%d")
+conststart <- as.Date("2001-01-17", format = "%Y-%m-%d")
+#Heavy-Duty Engine and Vehicle Standards
+HD_Engine <- as.Date("2007-01-01", format = "%Y-%m-%d")
+#Nonroad Diesel Rule
+NR_Diesel <- as.Date("2004-06-29", format = "%Y-%m-%d")
+#Minnesota Mercury Reduction Act
+MC_Reduction <- as.Date("2006-05-11", format = "%Y-%m-%d")
+#Next Gen Energy Act
+NG_Energy <- as.Date("2007-05-25", format = "%Y-%m-%d")
+#2030 Regional Development Framework
+RDF <- as.Date("2004-01-01", format = "%Y-%m-%d")
+#Clean Air Minnesota Initiative
+CA_Init <- as.Date("2003-01-01", format = "%Y-%m-%d")
+#Minnesota Renewable Energy Standard
+RE_Standard <- as.Date("2001-01-01", format = "%Y-%m-%d")
+#Vehicle Emissions Inspection and Maintenance Programs
+VE_Programs <- as.Date("2001-04-05", format = "%Y-%m-%d")
+
+```
+
+## Adding DB-OLS Variables
+
+The following code limits the data to the aforementioned period of interest and adds dummy variable columns for the day of the week fixed effects, the opening date of the metro, the start of construction date, the temperature, humidity, and wind speed and their lag polynomials, the time in days and its polynomials, and finally a column for each of the relevant policies from the previous section. The time and weather polynomials are to replicate the methodology of (Chen, 2012).
+
+```{r}
+df3 <- df2 %>%
+  filter(date>=startdate & date <= enddate) %>%
+  mutate(MetroOpen = ifelse(date >= opendate, 1, 0)) %>%
+  mutate(dow = wday(date)) %>%
+  mutate(construction = ifelse(date > conststart & date < opendate, 1, 0)) %>%
+  group_by(station_num) %>%
+  arrange(station_num, date) %>%
+  mutate(t = as.numeric(date-startdate)) %>%
+  mutate(t2 = t^2, t3 = t^3, t4 = t^4) %>%
+  mutate(l_tair = lag(Tair_f_tavg)) %>%
+  mutate(l_tair_2 = l_tair^2) %>%
+  mutate(l_tair_3 = l_tair^3) %>%
+  mutate(l_tair_4 = l_tair^4) %>%
+  mutate(l_qair = lag(Qair_f_tavg)) %>%
+  mutate(l_qair_2 = l_qair^2) %>%
+  mutate(l_qair_3 = l_qair^3) %>%
+  mutate(l_qair_4 = l_qair^4) %>%
+  mutate(l_wind = lag(Wind_f_tavg)) %>%
+  mutate(l_wind_2 = l_wind^2) %>%
+  mutate(l_wind_3 = l_wind^3) %>%
+  mutate(l_wind_4 = l_wind^4) %>%
+  mutate(CA_Init = ifelse(date >= CA_Init, 1, 0)) %>%
+  mutate(HD_Engine = ifelse(date >= HD_Engine, 1, 0)) %>%
+  mutate(MC_Reduction = ifelse(date >= MC_Reduction, 1, 0)) %>%
+  mutate(NG_Energy = ifelse(date >= NG_Energy, 1, 0)) %>%
+  mutate(NR_Diesel = ifelse(date >= NR_Diesel, 1, 0)) %>%
+  mutate(RDF = ifelse(date >= RDF, 1, 0)) %>%
+  mutate(RE_Standard = ifelse(date >= RE_Standard, 1, 0)) %>%
+  mutate(VE_Programs = ifelse(date >= VE_Programs, 1, 0))
+```
+
+## Running Regression Models
+
+The following code blocks run various regression models including different control factors each time. The results from these regressions have been collected into the table below:
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+library("knitr")
+figure1 <- read.csv("Regression Model Results.csv")
+kable(figure1)
+```
+
+This code block runs a simple regression without any of the control factors.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen, data = df3))
+```
+
+This code block runs a regression with the construction, month fixed effects, and day fixed effects added.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+This regression adds the weather polynomials to the previous one.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+This block adds the holiday control variable into the regression.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+
+```
+
+This block adds the time polynomials into the regression.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   t +
+                   t2 +
+                   t3 +
+                   t4 +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+This block adds the relevant policies for PM2.5 into the regression.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   t +
+                   t2 +
+                   t3 +
+                   t4 +
+                   CA_Init +
+                   HD_Engine +
+                   MC_Reduction +
+                   NG_Energy +
+                   NR_Diesel +
+                   RDF +
+                   RE_Standard +
+                   VE_Programs +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+Finally, this block removes the stations which were determined to be outliers (1, 16, 28, 34) into the regression.
+
+```{r}
+df4 <- df3 %>%
+  filter(station_num != 1 & station_num != 16 & station_num != 28 & station_num != 34)
+
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   t +
+                   t2 +
+                   t3 +
+                   t4 +
+                   CA_Init +
+                   HD_Engine +
+                   MC_Reduction +
+                   NG_Energy +
+                   NR_Diesel +
+                   RDF +
+                   RE_Standard +
+                   VE_Programs +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df4))
+```
+
+## References
+
+Sources of Data
+
+1.  Li, B., H. Beaudoing, and M. Rodell, NASA/GSFC/HSL (2020), GLDAS
+    Catchment Land Surface Model L4 daily 0.25 x 0.25 degree GRACE-DA1 V2.2,
+    Greenbelt, Maryland, USA, Goddard Earth Sciences Data and Information
+    Services Center (GES DISC), Accessed: 06/17/2024, [10.5067/TXBMLX370XX8](https://doi.org/10.5067/TXBMLX370XX8)
+
+2.  Di, Q., Y. Wei, A. Shtein, C. Hultquist, X. Xing, H. Amini, L. Shi, I.
+    Kloog, R. Silvern, J. Kelly, M. B. Sabath, C. Choirat, P. Koutrakis, A.
+    Lyapustin, Y. Wang, L. J. Mickley, and J. Schwartz.
+    2021.
+    Daily and Annual PM2.5 Concentrations for the Contiguous United
+    States, 1-km Grids, v1 (2000 - 2016).
+    Palisades,
+    New York:
+    NASA Socioeconomic Data and Applications Center (SEDAC).
+    	<https://doi.org/10.7927/0rvr-4538>. Accessed 06/17/2024.
+
+3.  Di, Q., H. Amini, L. Shi, I. Kloog, R. Silvern, J. Kelly, M. B. Sabath,
+    C. Choirat, P. Koutrakis, A. Lyapustin, Y. Wang, L. J. Mickley, and J.
+    Schwartz.
+    		2019.
+    	 An Ensemble-based Model of PM2.5 Concentration Across the
+    Contiguous United States with High Spatiotemporal Resolution.
+    		Environment International 130: 104909.
+    	 <https://doi.org/10.1016/j.envint.2019.104909>.	
+
+Sources for Relevant Policies:
+
+1.  Minnesota Public Utilities Commission. (2007). Renewable Energy Standard. Retrieved from [https://mn.gov/puc/activities/economic-analysis/renewable-environmental-dockets/#:\~:text=Renewable%20energy%20goals%20were%20passed,%2C%20the%20state's%20largest%20utility](https://mn.gov/puc/activities/economic-analysis/renewable-environmental-dockets/#:~:text=Renewable%20energy%20goals%20were%20passed,%2C%20the%20state's%20largest%20utility)
+
+2.  Vehicle Emissions Inspection and Maintenance (I/M): Policy and technical guidance \| US EPA. (2024, February 2). US EPA. <https://www.epa.gov/state-and-local-transportation/vehicle-emissions-inspection-and-maintenance-im-policy-and-technical>
+
+3.  Final Rule for Control of Air Pollution from New Motor Vehicles: Heavy-Duty Engine and Vehicle Standards and Highway Diesel Fuel Sulfur Control Requirements \| US EPA. (2024, May 17). US EPA. <https://www.epa.gov/regulations-emissions-vehicles-and-engines/final-rule-control-air-pollution-new-motor-vehicles>
+
+4.  Proposed Rule and Correction for control of Air pollution from new motor vehicles: In-Use Testing for Heavy-Duty Diesel Engines and Vehicles \| US EPA. (2023, July 11). US EPA. <https://www.epa.gov/regulations-emissions-vehicles-and-engines/final-rule-control-air-pollution-new-motor-vehicles-heavy>
+
+5.  Final rule for control of emissions of air pollution from nonroad diesel engines and fuel \| US EPA. (2024, February 6). US EPA. <https://www.epa.gov/regulations-emissions-vehicles-and-engines/final-rule-control-emissions-air-pollution-nonroad#:~:text=Rule%20Summary%20In%202004%2C%20EPA%20finalized%20Tier,nonattainment%20areas%20to%20improve%20their%20air%20quality>.
+
+6.  Reducing mercury releases \| Minnesota Pollution Control Agency. (n.d.). Minnesota Pollution Control Agency. <https://www.pca.state.mn.us/air-water-land-climate/reducing-mercury-releases>
+
+7.  Clean Cars Minnesota. (n.d.). Conservation MN. <https://www.conservationminnesota.org/clean-cars-minnesota>
+
+8.  2030 Regional Development Framework - Metropolitan Council. (n.d.). Metropolitan Council. <https://metrocouncil.org/Planning/Thrive-2040/2030-Regional-Development-Framework.aspx>
+
+9.  Environmental Initiative. (2024, April 19). Clean Air Minnesota - Environmental Initiative. <https://environmental-initiative.org/our-work/clean-air-minnesota/>
+
+Sources for Confounding Sources of Pollution:
+
+1.  Minnesota Pollution Control Agency. (n.d.). Northern Metal Recycling: Air Quality Permit Violations. Retrieved 2024, from <https://www.pca.state.mn.us/news-and-stories/northern-metals-pays-12000-for-violating-air-quality-regulations-at-its-becker-facility#:~:text=state.mn.us-,Northern%20Metals%20pays%20%2412%2C000%20for%20violating%20air%20quality%20regulations%20at,particulate%20matter%20>(PM10%20and%20PM2.
+
+2.  St Anthony, N., & Tribune, S. (2022, February 13). Flint Hills’ Pine Bend refinery produces more fuel with less pollution. Star Tribune. <https://www.startribune.com/flint-hills-pine-bend-refinery-produces-more-fuel-with-less-pollution/600146396/>
+
+3.  Xcel Energy. (n.d.). <https://mn.my.xcelenergy.com/s/about/newsroom/press-release/xcel-energy-takes-major-step-toward-replacing-coal-fired-king-plant-with-clean-e-MCQ6MJVC5VIZCSLMVOCUPTC5KMQM>
+
+4.  AIR EMISSION PERMIT. (2008). In epa.gov (No. 12300055–004). Environmental Protection Agency. <https://www.epa.gov/system/files/documents/2021-12/gerdauameristeel_12300055-004.pdf>
+
+5.  Minnesota Department of Health. (2004). Public health assessment for perfluorochemical contamination at a hazardous waste site in Minnesota. In Minnesota Department of Health Report. <https://www.health.state.mn.us/communities/environment/hazardous/docs/sites/washington/3mcg0205.pdf>
+
+6.  Hennepin County wrestles with future of Minneapolis waste incinerator. (2023, September 21). MPR News. <https://www.mprnews.org/story/2023/09/21/hennepin-county-wrestles-with-future-of-minneapolis-waste-incinerator>
+
+7.  APA Citation: KOCH REFINING CO./N-REN CORP. \| Superfund Site Profile \| Superfund Site Information \| US EPA. (n.d.). <https://cumulis.epa.gov/supercpad/SiteProfiles/index.cfm?fuseaction=second.cleanup&id=0503686>
+
+8.  APA Citation: Hillesheim, D. V. & Xcel Energy. (2023). Revised Petition for Alternative Operational Limits for Continuous Compliance Demonstration under 40 C.F.R. Part 63, Subpart YYYY. In U.S. Environmental Protection Agency \[Report\]. <https://www.epa.gov/system/files/documents/2023-09/Xcel%20Energy%20High%20Bridge_05-22-2023.pdf>
+
+9.  Rademacher, N. (n.d.). Meet the Main Energy Plant: a hidden world reducing University emissions. The Minnesota Daily. <https://mndaily.com/257087/news/acenergyplant/>
+
+10. ANOKa \| Federal Ammunition \| Minnesota Pollution Control Agency. (n.d.). Minnesota Pollution Control Agency. <https://www.pca.state.mn.us/local-sites-and-projects/anoka-federal-ammunition>
+
+11. Sfiecke. (2006, September 8). EPA cites CertainTeed for clean air violations. SWNewsMedia.com. <https://www.swnewsmedia.com/shakopee_valley_news/news/epa-cites-certainteed-for-clean-air-violations/article_ad8d6f3b-44f5-59ab-8451-c3860538a7a9.html>
+
+12. EJMap. (n.d.). <https://ejmap.org/displayfacility-74250.htm?giFacilityid=74250&gsTable=facility>

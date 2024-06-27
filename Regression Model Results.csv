@@ -1,0 +1,10 @@
+,log(PM2.5),,,,,,
+MetroOpen,0.020 ***,0.009,-0.074 ***,-0.074 ***,-0.183 ***,-0.239 ***,-0.232 ***
+Regulation Dummies,,,,,,x,x
+Weather Polynomials,,,x,x,x,x,x
+Construction Dummy,,x,x,x,x,x,x
+Month FE,,x,x,x,x,x,x
+Day of Week FE,,x,x,x,x,x,x
+Holiday Dummy,,,,x,x,x,x
+"t, t^2, t^3, t^4",,,,,x,x,x
+Exclude outlier stations,,,,,,,x

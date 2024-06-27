@@ -4,21 +4,19 @@ format: html
 editor: visual
 ---
 
-## DB-OLS
+## Setting Relevant Dates
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+The following code sets a list of dates for the relevant start and end dates for the period of interest (June 2000 - June 2008), the opening of the Metro Blue Line, the date when construction on the Blue Line began, and a list of dates when relevant policies that might impact the level of PM2.5 were enacted.
 
 ```{r}
+#| warning: false
+#| message: false
 library("tidyverse")
 ```
-
-You can add options to executable code like this
 
 ```{r}
 df <- read.csv("Mega_Dataframe.csv")
 ```
-
-The `echo: false` option disables the printing of code (only output is displayed).
 
 ```{r}
 df2 <- df %>%
@@ -31,8 +29,28 @@ startdate <- as.Date("2000-06-01", format = '%Y-%m-%d')
 enddate <- as.Date("2008-06-01", format = '%Y-%m-%d')
 opendate <- as.Date("2004-06-14", format = "%Y-%m-%d")
 conststart <- as.Date("2001-01-17", format = "%Y-%m-%d")
+#Heavy-Duty Engine and Vehicle Standards
+HD_Engine <- as.Date("2007-01-01", format = "%Y-%m-%d")
+#Nonroad Diesel Rule
+NR_Diesel <- as.Date("2004-06-29", format = "%Y-%m-%d")
+#Minnesota Mercury Reduction Act
+MC_Reduction <- as.Date("2006-05-11", format = "%Y-%m-%d")
+#Next Gen Energy Act
+NG_Energy <- as.Date("2007-05-25", format = "%Y-%m-%d")
+#2030 Regional Development Framework
+RDF <- as.Date("2004-01-01", format = "%Y-%m-%d")
+#Clean Air Minnesota Initiative
+CA_Init <- as.Date("2003-01-01", format = "%Y-%m-%d")
+#Minnesota Renewable Energy Standard
+RE_Standard <- as.Date("2001-01-01", format = "%Y-%m-%d")
+#Vehicle Emissions Inspection and Maintenance Programs
+VE_Programs <- as.Date("2001-04-05", format = "%Y-%m-%d")
 
 ```
+
+## Adding DB-OLS Variables
+
+The following code limits the data to the aforementioned period of interest and adds dummy variable columns for the day of the week fixed effects, the opening date of the metro, the start of construction date, the temperature, humidity, and wind speed and their lag polynomials, the time in days and its polynomials, and finally a column for each of the relevant policies from the previous section. The time and weather polynomials are to replicate the methodology of (Chen, 2012).
 
 ```{r}
 df3 <- df2 %>%
@@ -42,28 +60,216 @@ df3 <- df2 %>%
   mutate(construction = ifelse(date > conststart & date < opendate, 1, 0)) %>%
   group_by(station_num) %>%
   arrange(station_num, date) %>%
+  mutate(t = as.numeric(date-startdate)) %>%
+  mutate(t2 = t^2, t3 = t^3, t4 = t^4) %>%
   mutate(l_tair = lag(Tair_f_tavg)) %>%
-  mutate(l_tair_2 = lag(l_tair)) %>%
-  mutate(l_tair_3 = lag(l_tair_2)) %>%
-  mutate(l_tair_4 = lag(l_tair_3)) %>%
+  mutate(l_tair_2 = l_tair^2) %>%
+  mutate(l_tair_3 = l_tair^3) %>%
+  mutate(l_tair_4 = l_tair^4) %>%
   mutate(l_qair = lag(Qair_f_tavg)) %>%
-  mutate(l_qair_2 = lag(l_qair)) %>%
-  mutate(l_qair_3 = lag(l_qair_2)) %>%
-  mutate(l_qair_4 = lag(l_qair_3)) %>%
+  mutate(l_qair_2 = l_qair^2) %>%
+  mutate(l_qair_3 = l_qair^3) %>%
+  mutate(l_qair_4 = l_qair^4) %>%
   mutate(l_wind = lag(Wind_f_tavg)) %>%
-  mutate(l_wind_2 = lag(l_wind)) %>%
-  mutate(l_wind_3 = lag(l_wind_2)) %>%
-  mutate(l_wind_4 = lag(l_wind_3))
+  mutate(l_wind_2 = l_wind^2) %>%
+  mutate(l_wind_3 = l_wind^3) %>%
+  mutate(l_wind_4 = l_wind^4) %>%
+  mutate(CA_Init = ifelse(date >= CA_Init, 1, 0)) %>%
+  mutate(HD_Engine = ifelse(date >= HD_Engine, 1, 0)) %>%
+  mutate(MC_Reduction = ifelse(date >= MC_Reduction, 1, 0)) %>%
+  mutate(NG_Energy = ifelse(date >= NG_Energy, 1, 0)) %>%
+  mutate(NR_Diesel = ifelse(date >= NR_Diesel, 1, 0)) %>%
+  mutate(RDF = ifelse(date >= RDF, 1, 0)) %>%
+  mutate(RE_Standard = ifelse(date >= RE_Standard, 1, 0)) %>%
+  mutate(VE_Programs = ifelse(date >= VE_Programs, 1, 0))
 ```
+
+## Running Regression Models
+
+The following code blocks run various regression models including different control factors each time. The results from these regressions have been collected into the table below:
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+library("knitr")
+figure1 <- read.csv("Regression Model Results.csv")
+kable(figure1)
+```
+
+This code block runs a simple regression without any of the control factors.
 
 ```{r}
 summary(m1 <- lm(log(pm25) ~ MetroOpen, data = df3))
+```
+
+This code block runs a regression with the construction, month fixed effects, and day fixed effects added.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+This regression adds the weather polynomials to the previous one.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+This block adds the holiday control variable into the regression.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+
+```
+
+This block adds the time polynomials into the regression.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   t +
+                   t2 +
+                   t3 +
+                   t4 +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+This block adds the relevant policies for PM2.5 into the regression.
+
+```{r}
+summary(m1 <- lm(log(pm25) ~ MetroOpen +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   t +
+                   t2 +
+                   t3 +
+                   t4 +
+                   CA_Init +
+                   HD_Engine +
+                   MC_Reduction +
+                   NG_Energy +
+                   NR_Diesel +
+                   RDF +
+                   RE_Standard +
+                   VE_Programs +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+Finally, this block removes the stations which were determined to be outliers (1, 16, 28, 34) into the regression.
+
+```{r}
+df4 <- df3 %>%
+  filter(station_num != 1 & station_num != 16 & station_num != 28 & station_num != 34)
 
 summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    construction +
-                   Tair_f_tavg + 
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
                    Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
                    Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   t +
+                   t2 +
+                   t3 +
+                   t4 +
+                   CA_Init +
+                   HD_Engine +
+                   MC_Reduction +
+                   NG_Energy +
+                   NR_Diesel +
+                   RDF +
+                   RE_Standard +
+                   VE_Programs +
+                   as.factor(month) +
                    as.factor(dow)
-                   , data = df3))
+                   , data = df4))
 ```
