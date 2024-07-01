@@ -650,30 +650,13 @@ ggplot(data = df5, aes(x = date, y = pm25)) +
 
 Sources of Data
 
-1.  Li, B., H. Beaudoing, and M. Rodell, NASA/GSFC/HSL (2020), GLDAS
-    Catchment Land Surface Model L4 daily 0.25 x 0.25 degree GRACE-DA1 V2.2,
-    Greenbelt, Maryland, USA, Goddard Earth Sciences Data and Information
-    Services Center (GES DISC), Accessed: 06/17/2024, [10.5067/TXBMLX370XX8](https://doi.org/10.5067/TXBMLX370XX8)
+1.  Li, B., H. Beaudoing, and M. Rodell, NASA/GSFC/HSL (2020), GLDAS Catchment Land Surface Model L4 daily 0.25 x 0.25 degree GRACE-DA1 V2.2, Greenbelt, Maryland, USA, Goddard Earth Sciences Data and Information Services Center (GES DISC), Accessed: 06/17/2024, [10.5067/TXBMLX370XX8](https://doi.org/10.5067/TXBMLX370XX8)
 
-2.  Di, Q., Y. Wei, A. Shtein, C. Hultquist, X. Xing, H. Amini, L. Shi, I.
-    Kloog, R. Silvern, J. Kelly, M. B. Sabath, C. Choirat, P. Koutrakis, A.
-    Lyapustin, Y. Wang, L. J. Mickley, and J. Schwartz.
-    2021.
-    Daily and Annual PM2.5 Concentrations for the Contiguous United
-    States, 1-km Grids, v1 (2000 - 2016).
-    Palisades,
-    New York:
-    NASA Socioeconomic Data and Applications Center (SEDAC).
-    	<https://doi.org/10.7927/0rvr-4538>. Accessed 06/17/2024.
+2.  Di, Q., Y. Wei, A. Shtein, C. Hultquist, X. Xing, H. Amini, L. Shi, I. Kloog, R. Silvern, J. Kelly, M. B. Sabath, C. Choirat, P. Koutrakis, A. Lyapustin, Y. Wang, L. J. Mickley, and J. Schwartz.
 
-3.  Di, Q., H. Amini, L. Shi, I. Kloog, R. Silvern, J. Kelly, M. B. Sabath,
-    C. Choirat, P. Koutrakis, A. Lyapustin, Y. Wang, L. J. Mickley, and J.
-    Schwartz.
-    		2019.
-    	 An Ensemble-based Model of PM2.5 Concentration Across the
-    Contiguous United States with High Spatiotemporal Resolution.
-    		Environment International 130: 104909.
-    	 <https://doi.org/10.1016/j.envint.2019.104909>.	
+    2021. Daily and Annual PM2.5 Concentrations for the Contiguous United States, 1-km Grids, v1 (2000 - 2016). Palisades, New York: NASA Socioeconomic Data and Applications Center (SEDAC). <https://doi.org/10.7927/0rvr-4538>. Accessed 06/17/2024.
+
+3.  Di, Q., H. Amini, L. Shi, I. Kloog, R. Silvern, J. Kelly, M. B. Sabath, C. Choirat, P. Koutrakis, A. Lyapustin, Y. Wang, L. J. Mickley, and J. Schwartz. 2019. An Ensemble-based Model of PM2.5 Concentration Across the Contiguous United States with High Spatiotemporal Resolution. Environment International 130: 104909. <https://doi.org/10.1016/j.envint.2019.104909>.
 
 Sources for Relevant Policies:
 
