@@ -154,15 +154,19 @@ vars<-load_variables(year=2000, dataset="sf1", cache = TRUE)
 Query variables
 
 ```{r}
-targetvars<-c("P005001", "P005003", "P005004", "P005005", "P005006", "P005010")
-race<-get_decennial(year = 2000, geography = "block", variables=targetvars, state="MN", county="Hennepin", output="wide")
+targetvars<-c("P012002", "P012003", "P012004", "P012005", "P012006", "P012007", "P012008", "P012009", "P012010", "P012011", "P012012", "P012013", "P012014", "P012015", "P012016", "P012017", "P012018", "P012019", "P012020", "P012021", "P012022", "P012023", "P012024", "P012025", "P012026", "P012027", "P012028", "P012029", "P012030", "P012031", "P012032", "P012033", "P012034", "P012035", "P012036", "P012037", "P012038", "P012039", "P012040", "P012041", "P012042", "P012043", "P012044", "P012045", "P012046", "P012047", "P012048", "P012049")
+
+age1<-get_decennial(year = 2000, geography = "block", variables=targetvars, state="MN", county="Hennepin", output="wide")
+age2<-get_decennial(year = 2000, geography = "block", variables=targetvars, state="MN", county="Ramsey", output="wide")
+age<-rbind(age1,age2)
 ```
 
 Rename columns
 
 ```{r}
-racename<-race %>%
-  rename(total=P005001, white=P005003, black=P005004, native=P005005, asian=P005006, hisp=P005010)
+age_ranges<-age %>%
+  rename(total_male="P012002", total_male_under_5_years="P012003", total_male_5_to_9_years="P012004", total_male_10_to_14_years="P012005", total_male_15_to_17_years="P012006", total_male_18_and_19_years="P012007", total_male_20_years="P012008", total_male_21_years="P012009", total_male_22_to_24_years="P012010", total_male_25_to_29_years="P012011", total_male_30_to_34_years="P012012", total_male_35_to_39_years="P012013", total_male_40_to_44_years="P012014", total_male_45_to_49_years="P012015", total_male_50_to_54_years="P012016", total_male_55_to_59_years="P012017", total_male_60_and_61_years="P012018", total_male_62_to_64_years="P012019", total_male_65_and_66_years="P012020", total_male_67_to_69_years="P012021", total_male_70_to_74_years="P012022", total_male_75_to_79_years="P012023", total_male_80_to_84_years="P012024", total_male_85_years_and_over="P012025", total_female="P012026", total_female_under_5_years="P012027", total_female_5_to_9_years="P012028", total_female_10_to_14_years="P012029", total_female_15_to_17_years="P012030", total_female_18_and_19_years="P012031", total_female_20_years="P012032", total_female_21_years="P012033", total_female_22_to_24_years="P012034", total_female_25_to_29_years="P012035", total_female_30_to_34_years="P012036", total_female_35_to_39_years="P012037", total_female_40_to_44_years="P012038", total_female_45_to_49_years="P012039", total_female_50_to_54_years="P012040", total_female_55_to_59_years="P012041", total_female_60_and_61_years="P012042", total_female_62_to_64_years="P012043", total_female_65_and_66_years="P012044", total_female_67_to_69_years="P012045", total_female_70_to_74_years="P012046", total_female_75_to_79_years="P012047", total_female_80_to_84_years="P012048", total_female_85_years_and_over="P012049")
+
 ```
 
 # Calculate affected demographic group
@@ -179,19 +183,27 @@ plot(buff)
 Download shapefiles from [tigris package](https://github.com/walkerke/tigris)
 
 ```{r}
-shape<-tigris::blocks(state="MN", county="Hennepin", class="sp", year=2000)
-shapevect<-vect(shape)
-shapedf<-as.data.frame(shape)
+shape<-tigris::blocks(state="MN", county="Ramsey", class="sp", year=2000)
+shape2<-tigris::blocks(state="MN", county="Hennepin", class="sp", year=2000)
+shapevect1<-vect(shape)
+shapevect2<-vect(shape2)
+shapevect<-rbind(shapevect1, shapevect2)
+shapedf<-as.data.frame(shapevect)
+
+buff2 <- subset(buff, buff$FID == 19)
+plot(buff)
+lines(buff2, col = 'purple')
+
 ```
 
 ```{r}
-blockrace<-merge(shapevect, racename, by.x="BLKIDFP00", by.y="GEOID")
+blockage<-merge(shapevect, age_ranges, by.x="BLKIDFP00", by.y="GEOID")
 
-blockrace$blockarea<-expanse(blockrace, unit="m")
+blockage$blockarea<-expanse(blockrace, unit="m")
 
-blockracedf<-as.data.frame(blockrace)
+blockagedf<-as.data.frame(blockage)
 
-summary(blockracedf)
+summary(blockagedf)
 
 #100 percent match
 ```
@@ -199,32 +211,161 @@ summary(blockracedf)
 Intersect blocks with buffers
 
 ```{r}
-for (i in 1:37) {
+for (i in 0:36) {
   buff2 <- subset(buff, buff$FID == i)
 
-  int<-crop(blockrace, buff2)
+  int<-crop(blockage, buff2)
 
   int$intarea<-expanse(int, unit="m")
 
-  intdf<-as.data.frame(int) %>%
+  intdf<-as.data.frame(int)%>%
     mutate(frac_area=intarea/blockarea) %>%
-    mutate(total=total*frac_area, 
-          white=white*frac_area, 
-          black=black*frac_area, 
-          native=native*frac_area, 
-          asian=asian*frac_area, 
-          hisp=hisp*frac_area) %>%
-    summarize(total=sum(total), 
-            white=sum(white), 
-            black=sum(black), 
-            native=sum(native), 
-            asian=sum(asian), 
-            hisp=sum(hisp)) %>%
-    mutate(pct_white=white*100/total, 
-          pct_black=black*100/total, 
-          pct_native=native*100/total,
-          pct_asian=asian*100/total,
-          pct_hisp=hisp*100/total)
+    mutate(total_male=total_male*frac_area, 
+         total_male_under_5_years=total_male_under_5_years*frac_area, 
+         total_male_5_to_9_years=total_male_5_to_9_years*frac_area, 
+         total_male_10_to_14_years=total_male_10_to_14_years*frac_area, 
+         total_male_15_to_17_years=total_male_15_to_17_years*frac_area, 
+         total_male_18_and_19_years=total_male_18_and_19_years*frac_area, 
+         total_male_20_years=total_male_20_years*frac_area, 
+         total_male_21_years=total_male_21_years*frac_area, 
+         total_male_22_to_24_years=total_male_22_to_24_years*frac_area, 
+         total_male_25_to_29_years=total_male_25_to_29_years*frac_area, 
+         total_male_30_to_34_years=total_male_30_to_34_years*frac_area, 
+         total_male_35_to_39_years=total_male_35_to_39_years*frac_area, 
+         total_male_40_to_44_years=total_male_40_to_44_years*frac_area, 
+         total_male_45_to_49_years=total_male_45_to_49_years*frac_area, 
+         total_male_50_to_54_years=total_male_50_to_54_years*frac_area, 
+         total_male_55_to_59_years=total_male_55_to_59_years*frac_area, 
+         total_male_60_and_61_years=total_male_60_and_61_years*frac_area, 
+         total_male_62_to_64_years=total_male_62_to_64_years*frac_area, 
+         total_male_65_and_66_years=total_male_65_and_66_years*frac_area, 
+         total_male_67_to_69_years=total_male_67_to_69_years*frac_area, 
+         total_male_70_to_74_years=total_male_70_to_74_years*frac_area, 
+         total_male_75_to_79_years=total_male_75_to_79_years*frac_area, 
+         total_male_80_to_84_years=total_male_80_to_84_years*frac_area, 
+         total_male_85_years_and_over=total_male_85_years_and_over*frac_area,
+         total_female=total_female*frac_area, 
+         total_female_under_5_years=total_female_under_5_years*frac_area, 
+         total_female_5_to_9_years=total_female_5_to_9_years*frac_area, 
+         total_female_10_to_14_years=total_female_10_to_14_years*frac_area, 
+         total_female_15_to_17_years=total_female_15_to_17_years*frac_area, 
+         total_female_18_and_19_years=total_female_18_and_19_years*frac_area, 
+         total_female_20_years=total_female_20_years*frac_area, 
+         total_female_21_years=total_female_21_years*frac_area, 
+         total_female_22_to_24_years=total_female_22_to_24_years*frac_area, 
+         total_female_25_to_29_years=total_female_25_to_29_years*frac_area, 
+         total_female_30_to_34_years=total_female_30_to_34_years*frac_area, 
+         total_female_35_to_39_years=total_female_35_to_39_years*frac_area, 
+         total_female_40_to_44_years=total_female_40_to_44_years*frac_area, 
+         total_female_45_to_49_years=total_female_45_to_49_years*frac_area, 
+         total_female_50_to_54_years=total_female_50_to_54_years*frac_area, 
+         total_female_55_to_59_years=total_female_55_to_59_years*frac_area, 
+         total_female_60_and_61_years=total_female_60_and_61_years*frac_area, 
+         total_female_62_to_64_years=total_female_62_to_64_years*frac_area, 
+         total_female_65_and_66_years=total_female_65_and_66_years*frac_area, 
+         total_female_67_to_69_years=total_female_67_to_69_years*frac_area, 
+         total_female_70_to_74_years=total_female_70_to_74_years*frac_area, 
+         total_female_75_to_79_years=total_female_75_to_79_years*frac_area, 
+         total_female_80_to_84_years=total_female_80_to_84_years*frac_area, 
+         total_female_85_years_and_over=total_female_85_years_and_over*frac_area) %>%
+    summarize(total_male=sum(total_male), 
+          total_male_under_5_years=sum(total_male_under_5_years), 
+          total_male_5_to_9_years=sum(total_male_5_to_9_years), 
+          total_male_10_to_14_years=sum(total_male_10_to_14_years), 
+          total_male_15_to_17_years=sum(total_male_15_to_17_years), 
+          total_male_18_and_19_years=sum(total_male_18_and_19_years), 
+          total_male_20_years=sum(total_male_20_years), 
+          total_male_21_years=sum(total_male_21_years), 
+          total_male_22_to_24_years=sum(total_male_22_to_24_years), 
+          total_male_25_to_29_years=sum(total_male_25_to_29_years), 
+          total_male_30_to_34_years=sum(total_male_30_to_34_years), 
+          total_male_35_to_39_years=sum(total_male_35_to_39_years), 
+          total_male_40_to_44_years=sum(total_male_40_to_44_years), 
+          total_male_45_to_49_years=sum(total_male_45_to_49_years), 
+          total_male_50_to_54_years=sum(total_male_50_to_54_years), 
+          total_male_55_to_59_years=sum(total_male_55_to_59_years), 
+          total_male_60_and_61_years=sum(total_male_60_and_61_years), 
+          total_male_62_to_64_years=sum(total_male_62_to_64_years), 
+          total_male_65_and_66_years=sum(total_male_65_and_66_years), 
+          total_male_67_to_69_years=sum(total_male_67_to_69_years), 
+          total_male_70_to_74_years=sum(total_male_70_to_74_years), 
+          total_male_75_to_79_years=sum(total_male_75_to_79_years), 
+          total_male_80_to_84_years=sum(total_male_80_to_84_years), 
+          total_male_85_years_and_over=sum(total_male_85_years_and_over), 
+          total_female=sum(total_female), 
+          total_female_under_5_years=sum(total_female_under_5_years), 
+          total_female_5_to_9_years=sum(total_female_5_to_9_years), 
+          total_female_10_to_14_years=sum(total_female_10_to_14_years), 
+          total_female_15_to_17_years=sum(total_female_15_to_17_years), 
+          total_female_18_and_19_years=sum(total_female_18_and_19_years), 
+          total_female_20_years=sum(total_female_20_years), 
+          total_female_21_years=sum(total_female_21_years), 
+          total_female_22_to_24_years=sum(total_female_22_to_24_years), 
+          total_female_25_to_29_years=sum(total_female_25_to_29_years), 
+          total_female_30_to_34_years=sum(total_female_30_to_34_years), 
+          total_female_35_to_39_years=sum(total_female_35_to_39_years), 
+          total_female_40_to_44_years=sum(total_female_40_to_44_years), 
+          total_female_45_to_49_years=sum(total_female_45_to_49_years), 
+          total_female_50_to_54_years=sum(total_female_50_to_54_years), 
+          total_female_55_to_59_years=sum(total_female_55_to_59_years), 
+          total_female_60_and_61_years=sum(total_female_60_and_61_years), 
+          total_female_62_to_64_years=sum(total_female_62_to_64_years), 
+          total_female_65_and_66_years=sum(total_female_65_and_66_years), 
+          total_female_67_to_69_years=sum(total_female_67_to_69_years), 
+          total_female_70_to_74_years=sum(total_female_70_to_74_years), 
+          total_female_75_to_79_years=sum(total_female_75_to_79_years), 
+          total_female_80_to_84_years=sum(total_female_80_to_84_years), 
+          total_female_85_years_and_over=sum(total_female_85_years_and_over)) %>%
+  mutate(
+      pct_total_male = total_male * 100 / total_male,
+      pct_total_male_under_5_years = total_male_under_5_years * 100 / total_male,
+      pct_total_male_5_to_9_years = total_male_5_to_9_years * 100 / total_male,
+      pct_total_male_10_to_14_years = total_male_10_to_14_years * 100 / total_male,
+      pct_total_male_15_to_17_years = total_male_15_to_17_years * 100 / total_male,
+      pct_total_male_18_and_19_years = total_male_18_and_19_years * 100 / total_male,
+      pct_total_male_20_years = total_male_20_years * 100 / total_male,
+      pct_total_male_21_years = total_male_21_years * 100 / total_male,
+      pct_total_male_22_to_24_years = total_male_22_to_24_years * 100 / total_male,
+      pct_total_male_25_to_29_years = total_male_25_to_29_years * 100 / total_male,
+      pct_total_male_30_to_34_years = total_male_30_to_34_years * 100 / total_male,
+      pct_total_male_35_to_39_years = total_male_35_to_39_years * 100 / total_male,
+      pct_total_male_40_to_44_years = total_male_40_to_44_years * 100 / total_male,
+      pct_total_male_45_to_49_years = total_male_45_to_49_years * 100 / total_male,
+      pct_total_male_50_to_54_years = total_male_50_to_54_years * 100 / total_male,
+      pct_total_male_55_to_59_years = total_male_55_to_59_years * 100 / total_male,
+      pct_total_male_60_and_61_years = total_male_60_and_61_years * 100 / total_male,
+      pct_total_male_62_to_64_years = total_male_62_to_64_years * 100 / total_male,
+      pct_total_male_65_and_66_years = total_male_65_and_66_years * 100 / total_male,
+      pct_total_male_67_to_69_years = total_male_67_to_69_years * 100 / total_male,
+      pct_total_male_70_to_74_years = total_male_70_to_74_years * 100 / total_male,
+      pct_total_male_75_to_79_years = total_male_75_to_79_years * 100 / total_male,
+      pct_total_male_80_to_84_years = total_male_80_to_84_years * 100 / total_male,
+      pct_total_male_85_years_and_over = total_male_85_years_and_over * 100 / total_male,
+      pct_total_female = total_female * 100 / total_female,
+      pct_total_female_under_5_years = total_female_under_5_years * 100 / total_female,
+      pct_total_female_5_to_9_years = total_female_5_to_9_years * 100 / total_female,
+      pct_total_female_10_to_14_years = total_female_10_to_14_years * 100 / total_female,
+      pct_total_female_15_to_17_years = total_female_15_to_17_years * 100 / total_female,
+      pct_total_female_18_and_19_years = total_female_18_and_19_years * 100 / total_female,
+      pct_total_female_20_years = total_female_20_years * 100 / total_female,
+      pct_total_female_21_years = total_female_21_years * 100 / total_female,
+      pct_total_female_22_to_24_years = total_female_22_to_24_years * 100 / total_female,
+      pct_total_female_25_to_29_years = total_female_25_to_29_years * 100 / total_female,
+      pct_total_female_30_to_34_years = total_female_30_to_34_years * 100 / total_female,
+      pct_total_female_35_to_39_years = total_female_35_to_39_years * 100 / total_female,
+      pct_total_female_40_to_44_years = total_female_40_to_44_years * 100 / total_female,
+      pct_total_female_45_to_49_years = total_female_45_to_49_years * 100 / total_female,
+      pct_total_female_50_to_54_years = total_female_50_to_54_years * 100 / total_female,
+      pct_total_female_55_to_59_years = total_female_55_to_59_years * 100 / total_female,
+      pct_total_female_60_and_61_years = total_female_60_and_61_years * 100 / total_female,
+      pct_total_female_62_to_64_years = total_female_62_to_64_years * 100 / total_female,
+      pct_total_female_65_and_66_years = total_female_65_and_66_years * 100 / total_female,
+      pct_total_female_67_to_69_years = total_female_67_to_69_years * 100 / total_female,
+      pct_total_female_70_to_74_years = total_female_70_to_74_years * 100 / total_female,
+      pct_total_female_75_to_79_years = total_female_75_to_79_years * 100 / total_female,
+      pct_total_female_80_to_84_years = total_female_80_to_84_years * 100 / total_female,
+      pct_total_female_85_years_and_over = total_female_85_years_and_over * 100 / total_female
+    )
   
   write.csv(intdf, paste0("Census Data/census_data_station", i,".csv"), row.names = F)
   
@@ -236,7 +377,57 @@ Summarize demographic groups that live near light rail stations
 
 ```{r}
 sum_demog<-intdf %>%
-  select(pct_hisp, pct_white, pct_native, pct_black, pct_asian)
+  select(
+  pct_total_male, 
+  pct_total_male_under_5_years, 
+  pct_total_male_5_to_9_years, 
+  pct_total_male_10_to_14_years, 
+  pct_total_male_15_to_17_years,
+  pct_total_male_18_and_19_years, 
+  pct_total_male_20_years, 
+  pct_total_male_21_years, 
+  pct_total_male_22_to_24_years, 
+  pct_total_male_25_to_29_years, 
+  pct_total_male_30_to_34_years, 
+  pct_total_male_35_to_39_years, 
+  pct_total_male_40_to_44_years, 
+  pct_total_male_45_to_49_years, 
+  pct_total_male_50_to_54_years, 
+  pct_total_male_55_to_59_years, 
+  pct_total_male_60_and_61_years, 
+  pct_total_male_62_to_64_years, 
+  pct_total_male_65_and_66_years, 
+  pct_total_male_67_to_69_years, 
+  pct_total_male_70_to_74_years, 
+  pct_total_male_75_to_79_years, 
+  pct_total_male_80_to_84_years, 
+  pct_total_male_85_years_and_over, 
+  pct_total_female, 
+  pct_total_female_under_5_years, 
+  pct_total_female_5_to_9_years, 
+  pct_total_female_10_to_14_years, 
+  pct_total_female_15_to_17_years, 
+  pct_total_female_18_and_19_years, 
+  pct_total_female_20_years, 
+  pct_total_female_21_years, 
+  pct_total_female_22_to_24_years, 
+  pct_total_female_25_to_29_years, 
+  pct_total_female_30_to_34_years, 
+  pct_total_female_35_to_39_years, 
+  pct_total_female_40_to_44_years, 
+  pct_total_female_45_to_49_years, 
+  pct_total_female_50_to_54_years, 
+  pct_total_female_55_to_59_years, 
+  pct_total_female_60_and_61_years, 
+  pct_total_female_62_to_64_years, 
+  pct_total_female_65_and_66_years, 
+  pct_total_female_67_to_69_years, 
+  pct_total_female_70_to_74_years, 
+  pct_total_female_75_to_79_years, 
+  pct_total_female_80_to_84_years, 
+  pct_total_female_85_years_and_over
+)
+
 
 kable(sum_demog, digits=2)
 ```
