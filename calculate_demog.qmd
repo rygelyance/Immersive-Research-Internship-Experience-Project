@@ -199,7 +199,7 @@ lines(buff2, col = 'purple')
 ```{r}
 blockage<-merge(shapevect, age_ranges, by.x="BLKIDFP00", by.y="GEOID")
 
-blockage$blockarea<-expanse(blockrace, unit="m")
+blockage$blockarea<-expanse(blockage, unit="m")
 
 blockagedf<-as.data.frame(blockage)
 
@@ -211,6 +211,8 @@ summary(blockagedf)
 Intersect blocks with buffers
 
 ```{r}
+output<-c()
+
 for (i in 0:36) {
   buff2 <- subset(buff, buff$FID == i)
 
@@ -367,16 +369,18 @@ for (i in 0:36) {
       pct_total_female_85_years_and_over = total_female_85_years_and_over * 100 / total_female
     )
   
-  write.csv(intdf, paste0("Census Data/census_data_station", i,".csv"), row.names = F)
+  output<-rbind(output, intdf)
   
-  }
+}
+ 
+write.csv(output, "census_data_full.csv", row.names = F)
 
 ```
 
 Summarize demographic groups that live near light rail stations
 
 ```{r}
-sum_demog<-intdf %>%
+sum_demog<-output %>%
   select(
   pct_total_male, 
   pct_total_male_under_5_years, 
@@ -437,3 +441,204 @@ Merge station-level demographic data with station-level pollution reduction data
 Calculate the average emissions that each demographic group sees by using the formula below:
 
 $\dfrac{Hisp_{area1} \times Reduction_{area1} + Hisp_{area2} \times Reduction_{area2}}{Hisp_{area1} + Hisp_{area2}}$
+
+```{r}
+alldf<-cbind(output, coef)
+```
+
+```{r}
+reddf<-alldf %>%
+  mutate(total_male_change=total_male*coef,
+       total_male_under_5_years_change=total_male_under_5_years*coef,
+       total_male_5_to_9_years_change=total_male_5_to_9_years*coef,
+       total_male_10_to_14_years_change=total_male_10_to_14_years*coef,
+       total_male_15_to_17_years_change=total_male_15_to_17_years*coef,
+       total_male_18_and_19_years_change=total_male_18_and_19_years*coef,
+       total_male_20_years_change=total_male_20_years*coef,
+       total_male_21_years_change=total_male_21_years*coef,
+       total_male_22_to_24_years_change=total_male_22_to_24_years*coef,
+       total_male_25_to_29_years_change=total_male_25_to_29_years*coef,
+       total_male_30_to_34_years_change=total_male_30_to_34_years*coef,
+       total_male_35_to_39_years_change=total_male_35_to_39_years*coef,
+       total_male_40_to_44_years_change=total_male_40_to_44_years*coef,
+       total_male_45_to_49_years_change=total_male_45_to_49_years*coef,
+       total_male_50_to_54_years_change=total_male_50_to_54_years*coef,
+       total_male_55_to_59_years_change=total_male_55_to_59_years*coef,
+       total_male_60_and_61_years_change=total_male_60_and_61_years*coef,
+       total_male_62_to_64_years_change=total_male_62_to_64_years*coef,
+       total_male_65_and_66_years_change=total_male_65_and_66_years*coef,
+       total_male_67_to_69_years_change=total_male_67_to_69_years*coef,
+       total_male_70_to_74_years_change=total_male_70_to_74_years*coef,
+       total_male_75_to_79_years_change=total_male_75_to_79_years*coef,
+       total_male_80_to_84_years_change=total_male_80_to_84_years*coef,
+       total_male_85_years_and_over_change=total_male_85_years_and_over*coef,
+       total_female_change=total_female*coef,
+       total_female_under_5_years_change=total_female_under_5_years*coef,
+       total_female_5_to_9_years_change=total_female_5_to_9_years*coef,
+       total_female_10_to_14_years_change=total_female_10_to_14_years*coef,
+       total_female_15_to_17_years_change=total_female_15_to_17_years*coef,
+       total_female_18_and_19_years_change=total_female_18_and_19_years*coef,
+       total_female_20_years_change=total_female_20_years*coef,
+       total_female_21_years_change=total_female_21_years*coef,
+       total_female_22_to_24_years_change=total_female_22_to_24_years*coef,
+       total_female_25_to_29_years_change=total_female_25_to_29_years*coef,
+       total_female_30_to_34_years_change=total_female_30_to_34_years*coef,
+       total_female_35_to_39_years_change=total_female_35_to_39_years*coef,
+       total_female_40_to_44_years_change=total_female_40_to_44_years*coef,
+       total_female_45_to_49_years_change=total_female_45_to_49_years*coef,
+       total_female_50_to_54_years_change=total_female_50_to_54_years*coef,
+       total_female_55_to_59_years_change=total_female_55_to_59_years*coef,
+       total_female_60_and_61_years_change=total_female_60_and_61_years*coef,
+       total_female_62_to_64_years_change=total_female_62_to_64_years*coef,
+       total_female_65_and_66_years_change=total_female_65_and_66_years*coef,
+       total_female_67_to_69_years_change=total_female_67_to_69_years*coef,
+       total_female_70_to_74_years_change=total_female_70_to_74_years*coef,
+       total_female_75_to_79_years_change=total_female_75_to_79_years*coef,
+       total_female_80_to_84_years_change=total_female_80_to_84_years*coef,
+       total_female_85_years_and_over_change=total_female_85_years_and_over*coef) %>%
+summarize(total_male_change_sum=sum(total_male_change),
+          total_male_under_5_years_change_sum=sum(total_male_under_5_years_change),
+          total_male_5_to_9_years_change_sum=sum(total_male_5_to_9_years_change),
+          total_male_10_to_14_years_change_sum=sum(total_male_10_to_14_years_change),
+          total_male_15_to_17_years_change_sum=sum(total_male_15_to_17_years_change),
+          total_male_18_and_19_years_change_sum=sum(total_male_18_and_19_years_change),
+          total_male_20_years_change_sum=sum(total_male_20_years_change),
+          total_male_21_years_change_sum=sum(total_male_21_years_change),
+          total_male_22_to_24_years_change_sum=sum(total_male_22_to_24_years_change),
+          total_male_25_to_29_years_change_sum=sum(total_male_25_to_29_years_change),
+          total_male_30_to_34_years_change_sum=sum(total_male_30_to_34_years_change),
+          total_male_35_to_39_years_change_sum=sum(total_male_35_to_39_years_change),
+          total_male_40_to_44_years_change_sum=sum(total_male_40_to_44_years_change),
+          total_male_45_to_49_years_change_sum=sum(total_male_45_to_49_years_change),
+          total_male_50_to_54_years_change_sum=sum(total_male_50_to_54_years_change),
+          total_male_55_to_59_years_change_sum=sum(total_male_55_to_59_years_change),
+          total_male_60_and_61_years_change_sum=sum(total_male_60_and_61_years_change),
+          total_male_62_to_64_years_change_sum=sum(total_male_62_to_64_years_change),
+          total_male_65_and_66_years_change_sum=sum(total_male_65_and_66_years_change),
+          total_male_67_to_69_years_change_sum=sum(total_male_67_to_69_years_change),
+          total_male_70_to_74_years_change_sum=sum(total_male_70_to_74_years_change),
+          total_male_75_to_79_years_change_sum=sum(total_male_75_to_79_years_change),
+          total_male_80_to_84_years_change_sum=sum(total_male_80_to_84_years_change),
+          total_male_85_years_and_over_change_sum=sum(total_male_85_years_and_over_change),
+          total_female_change_sum=sum(total_female_change),
+          total_female_under_5_years_change_sum=sum(total_female_under_5_years_change),
+          total_female_5_to_9_years_change_sum=sum(total_female_5_to_9_years_change),
+          total_female_10_to_14_years_change_sum=sum(total_female_10_to_14_years_change),
+          total_female_15_to_17_years_change_sum=sum(total_female_15_to_17_years_change),
+          total_female_18_and_19_years_change_sum=sum(total_female_18_and_19_years_change),
+          total_female_20_years_change_sum=sum(total_female_20_years_change),
+          total_female_21_years_change_sum=sum(total_female_21_years_change),
+          total_female_22_to_24_years_change_sum=sum(total_female_22_to_24_years_change),
+          total_female_25_to_29_years_change_sum=sum(total_female_25_to_29_years_change),
+          total_female_30_to_34_years_change_sum=sum(total_female_30_to_34_years_change),
+          total_female_35_to_39_years_change_sum=sum(total_female_35_to_39_years_change),
+          total_female_40_to_44_years_change_sum=sum(total_female_40_to_44_years_change),
+          total_female_45_to_49_years_change_sum=sum(total_female_45_to_49_years_change),
+          total_female_50_to_54_years_change_sum=sum(total_female_50_to_54_years_change),
+          total_female_55_to_59_years_change_sum=sum(total_female_55_to_59_years_change),
+          total_female_60_and_61_years_change_sum=sum(total_female_60_and_61_years_change),
+          total_female_62_to_64_years_change_sum=sum(total_female_62_to_64_years_change),
+          total_female_65_and_66_years_change_sum=sum(total_female_65_and_66_years_change),
+          total_female_67_to_69_years_change_sum=sum(total_female_67_to_69_years_change),
+          total_female_70_to_74_years_change_sum=sum(total_female_70_to_74_years_change),
+          total_female_75_to_79_years_change_sum=sum(total_female_75_to_79_years_change),
+          total_female_80_to_84_years_change_sum=sum(total_female_80_to_84_years_change),
+          total_female_85_years_and_over_change_sum=sum(total_female_85_years_and_over_change),
+          total_male=sum(total_male),
+          total_male_under_5_years=sum(total_male_under_5_years),
+          total_male_5_to_9_years=sum(total_male_5_to_9_years),
+          total_male_10_to_14_years=sum(total_male_10_to_14_years),
+          total_male_15_to_17_years=sum(total_male_15_to_17_years),
+          total_male_18_and_19_years=sum(total_male_18_and_19_years),
+          total_male_20_years=sum(total_male_20_years),
+          total_male_21_years=sum(total_male_21_years),
+          total_male_22_to_24_years=sum(total_male_22_to_24_years),
+          total_male_25_to_29_years=sum(total_male_25_to_29_years),
+          total_male_30_to_34_years=sum(total_male_30_to_34_years),
+          total_male_35_to_39_years=sum(total_male_35_to_39_years),
+          total_male_40_to_44_years=sum(total_male_40_to_44_years),
+          total_male_45_to_49_years=sum(total_male_45_to_49_years),
+          total_male_50_to_54_years=sum(total_male_50_to_54_years),
+          total_male_55_to_59_years=sum(total_male_55_to_59_years),
+          total_male_60_and_61_years=sum(total_male_60_and_61_years),
+          total_male_62_to_64_years=sum(total_male_62_to_64_years),
+          total_male_65_and_66_years=sum(total_male_65_and_66_years),
+          total_male_67_to_69_years=sum(total_male_67_to_69_years),
+          total_male_70_to_74_years=sum(total_male_70_to_74_years),
+          total_male_75_to_79_years=sum(total_male_75_to_79_years),
+          total_male_80_to_84_years=sum(total_male_80_to_84_years),
+          total_male_85_years_and_over=sum(total_male_85_years_and_over),
+          total_female=sum(total_female),
+          total_female_under_5_years=sum(total_female_under_5_years),
+          total_female_5_to_9_years=sum(total_female_5_to_9_years),
+          total_female_10_to_14_years=sum(total_female_10_to_14_years),
+          total_female_15_to_17_years=sum(total_female_15_to_17_years),
+          total_female_18_and_19_years=sum(total_female_18_and_19_years),
+          total_female_20_years=sum(total_female_20_years),
+          total_female_21_years=sum(total_female_21_years),
+          total_female_22_to_24_years=sum(total_female_22_to_24_years),
+          total_female_25_to_29_years=sum(total_female_25_to_29_years),
+          total_female_30_to_34_years=sum(total_female_30_to_34_years),
+          total_female_35_to_39_years=sum(total_female_35_to_39_years),
+          total_female_40_to_44_years=sum(total_female_40_to_44_years),
+          total_female_45_to_49_years=sum(total_female_45_to_49_years),
+          total_female_50_to_54_years=sum(total_female_50_to_54_years),
+          total_female_55_to_59_years=sum(total_female_55_to_59_years),
+          total_female_60_and_61_years=sum(total_female_60_and_61_years),
+          total_female_62_to_64_years=sum(total_female_62_to_64_years),
+          total_female_65_and_66_years=sum(total_female_65_and_66_years),
+          total_female_67_to_69_years=sum(total_female_67_to_69_years),
+          total_female_70_to_74_years=sum(total_female_70_to_74_years),
+          total_female_75_to_79_years=sum(total_female_75_to_79_years),
+          total_female_80_to_84_years=sum(total_female_80_to_84_years),
+          total_female_85_years_and_over=sum(total_female_85_years_and_over)) %>%
+mutate(total_male_change_ave=total_male_change_sum*100/total_male,
+       total_male_under_5_years_change_ave=total_male_under_5_years_change_sum*100/total_male_under_5_years,
+       total_male_5_to_9_years_change_ave=total_male_5_to_9_years_change_sum*100/total_male_5_to_9_years,
+       total_male_10_to_14_years_change_ave=total_male_10_to_14_years_change_sum*100/total_male_10_to_14_years,
+       total_male_15_to_17_years_change_ave=total_male_15_to_17_years_change_sum*100/total_male_15_to_17_years,
+       total_male_18_and_19_years_change_ave=total_male_18_and_19_years_change_sum*100/total_male_18_and_19_years,
+       total_male_20_years_change_ave=total_male_20_years_change_sum*100/total_male_20_years,
+       total_male_21_years_change_ave=total_male_21_years_change_sum*100/total_male_21_years,
+       total_male_22_to_24_years_change_ave=total_male_22_to_24_years_change_sum*100/total_male_22_to_24_years,
+       total_male_25_to_29_years_change_ave=total_male_25_to_29_years_change_sum*100/total_male_25_to_29_years,
+       total_male_30_to_34_years_change_ave=total_male_30_to_34_years_change_sum*100/total_male_30_to_34_years,
+       total_male_35_to_39_years_change_ave=total_male_35_to_39_years_change_sum*100/total_male_35_to_39_years,
+       total_male_40_to_44_years_change_ave=total_male_40_to_44_years_change_sum*100/total_male_40_to_44_years,
+       total_male_45_to_49_years_change_ave=total_male_45_to_49_years_change_sum*100/total_male_45_to_49_years,
+       total_male_50_to_54_years_change_ave=total_male_50_to_54_years_change_sum*100/total_male_50_to_54_years,
+       total_male_55_to_59_years_change_ave=total_male_55_to_59_years_change_sum*100/total_male_55_to_59_years,
+       total_male_60_and_61_years_change_ave=total_male_60_and_61_years_change_sum*100/total_male_60_and_61_years,
+       total_male_62_to_64_years_change_ave=total_male_62_to_64_years_change_sum*100/total_male_62_to_64_years,
+       total_male_65_and_66_years_change_ave=total_male_65_and_66_years_change_sum*100/total_male_65_and_66_years,
+       total_male_67_to_69_years_change_ave=total_male_67_to_69_years_change_sum*100/total_male_67_to_69_years,
+       total_male_70_to_74_years_change_ave=total_male_70_to_74_years_change_sum*100/total_male_70_to_74_years,
+       total_male_75_to_79_years_change_ave=total_male_75_to_79_years_change_sum*100/total_male_75_to_79_years,
+       total_male_80_to_84_years_change_ave=total_male_80_to_84_years_change_sum*100/total_male_80_to_84_years,
+       total_male_85_years_and_over_change_ave=total_male_85_years_and_over_change_sum*100/total_male_85_years_and_over,
+       total_female_change_ave=total_female_change_sum*100/total_female,
+       total_female_under_5_years_change_ave=total_female_under_5_years_change_sum*100/total_female_under_5_years,
+       total_female_5_to_9_years_change_ave=total_female_5_to_9_years_change_sum*100/total_female_5_to_9_years,
+       total_female_10_to_14_years_change_ave=total_female_10_to_14_years_change_sum*100/total_female_10_to_14_years,
+       total_female_15_to_17_years_change_ave=total_female_15_to_17_years_change_sum*100/total_female_15_to_17_years,
+       total_female_18_and_19_years_change_ave=total_female_18_and_19_years_change_sum*100/total_female_18_and_19_years,
+       total_female_20_years_change_ave=total_female_20_years_change_sum*100/total_female_20_years,
+       total_female_21_years_change_ave=total_female_21_years_change_sum*100/total_female_21_years,
+       total_female_22_to_24_years_change_ave=total_female_22_to_24_years_change_sum*100/total_female_22_to_24_years,
+       total_female_25_to_29_years_change_ave=total_female_25_to_29_years_change_sum*100/total_female_25_to_29_years,
+       total_female_30_to_34_years_change_ave=total_female_30_to_34_years_change_sum*100/total_female_30_to_34_years,
+       total_female_35_to_39_years_change_ave=total_female_35_to_39_years_change_sum*100/total_female_35_to_39_years,
+       total_female_40_to_44_years_change_ave=total_female_40_to_44_years_change_sum*100/total_female_40_to_44_years,
+       total_female_45_to_49_years_change_ave=total_female_45_to_49_years_change_sum*100/total_female_45_to_49_years,
+       total_female_50_to_54_years_change_ave=total_female_50_to_54_years_change_sum*100/total_female_50_to_54_years,
+       total_female_55_to_59_years_change_ave=total_female_55_to_59_years_change_sum*100/total_female_55_to_59_years,
+       total_female_60_and_61_years_change_ave=total_female_60_and_61_years_change_sum*100/total_female_60_and_61_years,
+       total_female_62_to_64_years_change_ave=total_female_62_to_64_years_change_sum*100/total_female_62_to_64_years,
+       total_female_65_and_66_years_change_ave=total_female_65_and_66_years_change_sum*100/total_female_65_and_66_years,
+       total_female_67_to_69_years_change_ave=total_female_67_to_69_years_change_sum*100/total_female_67_to_69_years,
+       total_female_70_to_74_years_change_ave=total_female_70_to_74_years_change_sum*100/total_female_70_to_74_years,
+       total_female_75_to_79_years_change_ave=total_female_75_to_79_years_change_sum*100/total_female_75_to_79_years,
+       total_female_80_to_84_years_change_ave=total_female_80_to_84_years_change_sum*100/total_female_80_to_84_years,
+       total_female_85_years_and_over_change_ave=total_female_85_years_and_over_change_sum*100/total_female_85_years_and_over)
+
+```
