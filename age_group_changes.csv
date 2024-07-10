@@ -1,2 +1,25 @@
-"","total_male_change_ave","total_male_under_5_years_change_ave","total_male_5_to_9_years_change_ave","total_male_10_to_14_years_change_ave","total_male_15_to_17_years_change_ave","total_male_18_and_19_years_change_ave","total_male_20_years_change_ave","total_male_21_years_change_ave","total_male_22_to_24_years_change_ave","total_male_25_to_29_years_change_ave","total_male_30_to_34_years_change_ave","total_male_35_to_39_years_change_ave","total_male_40_to_44_years_change_ave","total_male_45_to_49_years_change_ave","total_male_50_to_54_years_change_ave","total_male_55_to_59_years_change_ave","total_male_60_and_61_years_change_ave","total_male_62_to_64_years_change_ave","total_male_65_and_66_years_change_ave","total_male_67_to_69_years_change_ave","total_male_70_to_74_years_change_ave","total_male_75_to_79_years_change_ave","total_male_80_to_84_years_change_ave","total_male_85_years_and_over_change_ave","total_female_change_ave","total_female_under_5_years_change_ave","total_female_5_to_9_years_change_ave","total_female_10_to_14_years_change_ave","total_female_15_to_17_years_change_ave","total_female_18_and_19_years_change_ave","total_female_20_years_change_ave","total_female_21_years_change_ave","total_female_22_to_24_years_change_ave","total_female_25_to_29_years_change_ave","total_female_30_to_34_years_change_ave","total_female_35_to_39_years_change_ave","total_female_40_to_44_years_change_ave","total_female_45_to_49_years_change_ave","total_female_50_to_54_years_change_ave","total_female_55_to_59_years_change_ave","total_female_60_and_61_years_change_ave","total_female_62_to_64_years_change_ave","total_female_65_and_66_years_change_ave","total_female_67_to_69_years_change_ave","total_female_70_to_74_years_change_ave","total_female_75_to_79_years_change_ave","total_female_80_to_84_years_change_ave","total_female_85_years_and_over_change_ave"
-"1",-17.0983131190451,-17.2014079178468,-17.5730333329017,-17.588371735306,-17.6009776107802,-17.2851833126003,-17.4498914014569,-17.1685472184569,-17.1057217570239,-16.9274707866999,-17.0964327072778,-17.178870271445,-17.2203704819618,-17.1780531205514,-16.6786773141274,-16.5504473895476,-16.4683838220118,-16.0939749219548,-16.6080122044871,-16.4144822365396,-16.6202172561245,-16.3666777653021,-16.3169385443195,-16.5506780851952,-16.9433571048602,-17.2724153691444,-17.3924178031305,-17.4746563096223,-17.3842247135614,-17.1795880980235,-16.9389284121639,-16.941553747662,-16.8815844308118,-16.9001407930295,-17.1375451440384,-17.2452845847562,-17.160109751025,-17.2253514576052,-16.7413906037472,-16.108783880749,-15.8355908968069,-16.126821979232,-16.2159466968173,-16.5516396557355,-16.1442646330326,-16.2376956079114,-15.5929894502539,-16.1215600657824
+,Male,Female
+total,-17.09831312,-16.9433571
+under 5,-17.20140792,-17.27241537
+5 to 9,-17.57303333,-17.3924178
+10 to 14,-17.58837174,-17.47465631
+15 to 17,-17.60097761,-17.38422471
+18 to 19,-17.28518331,-17.1795881
+20,-17.4498914,-16.93892841
+21,-17.16854722,-16.94155375
+22 to 24,-17.10572176,-16.88158443
+25 to 29,-16.92747079,-16.90014079
+30 to 34,-17.09643271,-17.13754514
+35 to 39,-17.17887027,-17.24528458
+40 to 44,-17.22037048,-17.16010975
+45 to 49,-17.17805312,-17.22535146
+50 to 54,-16.67867731,-16.7413906
+55 to 59,-16.55044739,-16.10878388
+60 to 61,-16.46838382,-15.8355909
+62 to 64,-16.09397492,-16.12682198
+65 to 66,-16.6080122,-16.2159467
+67 to 69,-16.41448224,-16.55163966
+70 to 74,-16.62021726,-16.14426463
+75 to 79,-16.36667777,-16.23769561
+80 to 84,-16.31693854,-15.59298945
+85 and over,-16.55067809,-16.12156007
