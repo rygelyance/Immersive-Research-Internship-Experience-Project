@@ -100,7 +100,6 @@ geo <- read.csv("stations_with_locations.csv")
 
 sample_coords <- cbind(geo$lon2, geo$lat2)
 lr_stations <- vect(sample_coords)
-geom(lr_stations)
 crdref <- "+proj=longlat +datum=WGS84"
 pts <- vect(sample_coords, crs=crdref)
 plot(pts)
@@ -109,7 +108,7 @@ plot(pts)
 
 ## Plotting the Stations (Part 2)
 
-This code chunk displays the station locations on top of a real map with a 500m buffer circle around each station location. These buffers and their sizes are to help to later extract the average PM2.5 and control data for each of the stations individually while limiting the influence of potential other sources of PM2.5 as well as overlap with other stations.
+This code chunk displays the station locations on top of a real map with a 500m buffer circle around each station location. These buffers and their sizes are to help to later extract the average PM2.5 and control data for each of the stations individually while limiting the influence of potential other sources of PM2.5 as well as overlap with other stations. In addition, these buffers are necessary to get an average reading of all the data near the station rather than relying on a single point, which could lead to outliers. 
 
 ```{r}
 library("terra")
@@ -178,7 +177,6 @@ geo2 <- read.csv("pollution_locations.csv")
 
 sample_coords <- cbind(geo$lon2, geo$lat2)
 lr_stations <- vect(sample_coords)
-geom(lr_stations)
 crdref <- "+proj=longlat +datum=WGS84"
 pts <- vect(sample_coords, crs=crdref)
 
@@ -330,37 +328,37 @@ ggplot(data = half_data, aes(x = station_num, y = pm25)) +
   geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
   ylim(0, 25)
 
-ggplot(data = truncated_data, aes(x = station_num, y = pm25)) +
-  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
-  ylim(0, 25)
+#ggplot(data = truncated_data, aes(x = station_num, y = pm25)) +
+  #geom_boxplot(outlier.shape = NA, aes(group = station_num, color = #factor(station_num))) +
+  #ylim(0, 25)
 
-ggplot(data = truncated_data2, aes(x = station_num, y = pm25)) +
-  geom_boxplot(outlier.shape = NA, aes(group = station_num, color = factor(station_num))) +
-  ylim(0, 25)
+#ggplot(data = truncated_data2, aes(x = station_num, y = pm25)) +
+  #geom_boxplot(outlier.shape = NA, aes(group = station_num, color = #factor(station_num))) +
+  #ylim(0, 25)
 
 before_mean<- aggregate(x=truncated_data$pm25,
                       # Specify group indicator
                       by = list(truncated_data$station_num),      
                       # Specify function (i.e. mean)
                       FUN = mean)
-print(before_mean)
 
 after_mean<- aggregate(x=truncated_data2$pm25,
                       # Specify group indicator
                       by = list(truncated_data2$station_num),      
                       # Specify function (i.e. mean)
                       FUN = mean)
-print(after_mean)
+
 
 b = before_mean$x
 a = after_mean$x
-print(a-b)
 
 ```
 
 ## Setting Relevant Dates
 
 The following code sets a list of dates for the relevant start and end dates for the period of interest (June 2000 - June 2008), the opening of the Metro Blue Line, the date when construction on the Blue Line began, and a list of dates when relevant policies that might impact the level of PM2.5 were enacted.
+
+These policies include the Heavy-Duty Engine and Vehicle Standards, which mandated reductions in particulate matter emissions from diesel engines (EPA's Heavy-Duty Engine and Vehicle Standards, 2001), the Nonroad Diesel Rule, which set stringent emission standards for nonroad diesel engines (Nonroad Diesel Rule, 2004), the Minnesota Mercury Reduction Act, which aimed to reduce mercury and other pollutants from power plants (Minnesota Mercury Reduction Act, 2006), the Next Gen Energy Act, which set aggressive targets for reducing greenhouse gas emissions and included measures to increase energy efficiency and the use of renewable energy sources (Next Generation Energy Act, 2007), the 2030 Regional Development Framework, which promoted sustainable development and reduced sprawl (2030 Regional Development Framework, 2004), the Clean Air Minnesota Initiative, which worked to reduce air pollution through voluntary measures (Clean Air Minnesota Initiative, 2005), the Minnesota Renewable Energy Standard, which mandated that 25% of the state's electricity must come from renewable sources by 2025 (Minnesota Renewable Energy Standard, 2007), and the vehicle emissions inspection and maintenance programs, which were aimed at reducing smog-forming pollutants and ensuring vehicles were properly maintained and efficient (Vehicle Emissions Inspection and Maintenance Programs, 2001).
 
 ```{r}
 #| warning: false
@@ -451,15 +449,17 @@ figure1 <- read.csv("Regression Model Results.csv")
 kable(figure1)
 ```
 
-This code block runs a simple regression without any of the control factors.
+This code block runs a simple regression without any of the control factors (Column "log.PM2.5" in table).
 
 ```{r}
+#| eval: false
 summary(m1 <- lm(log(pm25) ~ MetroOpen, data = df3))
 ```
 
-This code block runs a regression with the construction, month fixed effects, and day fixed effects added.
+This code block runs a regression with the construction, month fixed effects, and day fixed effects added (Column "X.1" in table).
 
 ```{r}
+#| eval: false
 summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    construction +
                    as.factor(month) +
@@ -467,9 +467,10 @@ summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    , data = df3))
 ```
 
-This regression adds the weather polynomials to the previous one.
+This regression adds the weather polynomials to the previous one (Column "X.2" in table).
 
 ```{r}
+#| eval: false
 summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    construction +
                    Tair_f_tavg +
@@ -492,9 +493,10 @@ summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    , data = df3))
 ```
 
-This block adds the holiday control variable into the regression.
+This block adds the holiday control variable into the regression (Column "X.3" in table).
 
 ```{r}
+#| eval: false
 summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    construction +
                    Tair_f_tavg +
@@ -519,9 +521,10 @@ summary(m1 <- lm(log(pm25) ~ MetroOpen +
 
 ```
 
-This block adds the time polynomials into the regression.
+This block adds the time polynomials into the regression (Column "X.4" in table).
 
 ```{r}
+#| eval: false
 summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    construction +
                    Tair_f_tavg +
@@ -549,9 +552,10 @@ summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    , data = df3))
 ```
 
-This block adds the relevant policies for PM2.5 into the regression.
+This block adds the relevant policies for PM2.5 into the regression (Column "X.5" in table).
 
 ```{r}
+#| eval: false
 summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    construction +
                    Tair_f_tavg +
@@ -587,9 +591,10 @@ summary(m1 <- lm(log(pm25) ~ MetroOpen +
                    , data = df3))
 ```
 
-Finally, this block removes the stations which were determined to be outliers (1, 16, 28, 34) into the regression.
+Finally, this block removes the stations which were determined to be outliers (1, 16, 28, 34) into the regression (Column "X.6" in table).
 
 ```{r}
+#| eval: false
 df4 <- df3 %>%
   filter(station_num != 1 & station_num != 16 & station_num != 28 & station_num != 34)
 
