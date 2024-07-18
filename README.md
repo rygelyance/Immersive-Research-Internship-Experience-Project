@@ -39,6 +39,53 @@ Hypothesis: Light rail openings decrease the pollution around stations
 
   - Local/Federal/State Policies
 
+    - **EPA’s Heavy-Duty Engine and Vehicle Standards (2001)**: These
+      standards, implemented in 2007, mandated reductions in particulate
+      matter emissions from diesel engines.
+
+    - **Clean Diesel Trucks and Buses Rule (2001)**: This rule aimed to
+      reduce diesel particulate matter emissions by over 90% from 2007
+      onwards.
+
+    - **Nonroad Diesel Rule (2004)**: This rule set stringent emission
+      standards for nonroad diesel engines, which took effect in stages
+      starting in 2008.
+
+    - **Minnesota Mercury Reduction Act (2006)**: While primarily
+      targeting mercury, this act also required reductions in other
+      pollutants, including PM2.5, from power plants.
+
+    - **Minnesota Clean Car Rule (2007)**: This rule adopted
+      California’s stricter vehicle emissions standards, which included
+      measures to reduce PM2.5 emissions from cars and light trucks.
+
+    - **Next Generation Energy Act (2007)**: This act set aggressive
+      targets for reducing greenhouse gas emissions and included
+      measures to increase energy efficiency and the use of renewable
+      energy sources, indirectly impacting PM2.5 levels.
+
+    - **Metropolitan Council’s Regional Development Framework (2004)**:
+      This framework promoted sustainable development and reduced
+      sprawl, which can help reduce vehicle emissions and PM2.5 levels.
+
+    - **Minneapolis Green Fleet Policy (2007)**: This policy aimed to
+      reduce emissions from the city’s fleet of vehicles, including
+      particulate matter.
+
+    - **Clean Air Minnesota Initiative (2005)**: This public-private
+      partnership worked to reduce air pollution through voluntary
+      measures, including efforts to reduce PM2.5 emissions.
+
+    - **Minnesota’s Renewable Energy Standard (2007)**: Mandated that
+      25% of the state’s electricity come from renewable sources by
+      2025, reducing reliance on coal-fired power plants, a major source
+      of PM2.5.
+
+    - **Vehicle Emissions Inspection and Maintenance Programs**: These
+      programs, though primarily aimed at reducing smog-forming
+      pollutants, also contributed to lower PM2.5 levels by ensuring
+      vehicles were properly maintained and operating efficiently.
+
 ``` r
 library("knitr")
 figure1 <- read.csv("Sources of Pollution - Twin Cities - Sheet1 (2).csv")
@@ -177,6 +224,11 @@ point, which could lead to outliers.
 ``` r
 library("terra")
 library("maptiles")
+```
+
+    Warning: package 'maptiles' was built under R version 4.3.3
+
+``` r
 geo <- read.csv("stations_with_locations.csv")
 
 pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
@@ -242,6 +294,11 @@ write.csv(geo2, "pollution_locations.csv")
 
 ## Plotting the Factory Sources of Pollution
 
+This code plots nearby sources of pollution (in purple), and where they
+are located in comparison to the light rail itself. This will be
+factored in later when deciding which stations may be outliers in terms
+of PM2.5 air pollution.
+
 ``` r
 library("terra")
 geo <- read.csv("stations_with_locations.csv")
@@ -258,19 +315,8 @@ pol_pts <- vect(pol_coords, crs=crdref)
 
 library("maptiles")
 
-plot(pts)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
-
-``` r
 pts_buffer <- buffer(pts, width = 500) # Width is measured in meters
-plot(pts_buffer)
-```
 
-![](README_files/figure-commonmark/unnamed-chunk-11-2.png)
-
-``` r
 lrc <- centroids(lr_project, inside = FALSE)
 
 pts_buffer1 <- buffer(lrc, width = 10000)
@@ -279,14 +325,23 @@ extent <- buffer(pts, width = 600)
 bg <- get_tiles(ext(extent))
 plot(bg)
 points(pts)
+lines(pts_buffer, col = "blue")
 points(pol_pts, col = "purple", cex = 1.5)
-lines(pts_buffer1, col = "blue")
-lines(pts_buffer, col = "red")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-11-3.png)
+![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
 
-## Plotting Meteorology Data
+## Extracting Meteorology Data
+
+This code extracts all of the meteorology data provided by GLDAS for all
+of the 3,288 days in our period of interest, cropped to the areas within
+each of the station buffers. It then takes the averages of each
+meteorological factor in each station then writes them to individual
+dataframes to be combined in the next section. We extracted all the
+meteorological factors for convenience, but we were mainly interested in
+the temperature, humidity, and wind speed at each station, as these are
+the meteorological factors that would have the most impact on PM2.5
+pollution.
 
 ``` r
 library("terra")
@@ -310,7 +365,6 @@ for(i in 1:3288){
   int<-crop(r, station_buffers,
             snap="in",
             mask=TRUE)
-  plot(int)
 
   #convert cropped raster into dataframe and find average value
   metdf<-terra::extract(int, sta, fun="mean", na.rm=TRUE)  %>% 
@@ -516,7 +570,7 @@ effects, the opening date of the metro, the start of construction date,
 the temperature, humidity, and wind speed and their lag polynomials, the
 time in days and its polynomials, and finally a column for each of the
 relevant policies from the previous section. The time and weather
-polynomials are to replicate the methodology of (Chen, 2012).
+polynomials are to replicate the methodology of (Chen & Whalley, 2012).
 
 ``` r
 df3 <- df2 %>%
@@ -772,7 +826,807 @@ ggplot(data = df5, aes(x = date, y = pm25)) +
 
 ![](README_files/figure-commonmark/unnamed-chunk-28-1.png)
 
+# Calculating Station-Level Pollution Change
+
+``` r
+library("tidyverse")
+library("knitr")
+```
+
+This chunk uploads the full data frame required to estimate the impact
+of light rails on PM2.5 levels surrounding all stations
+
+``` r
+df<-read.csv("Mega_Dataframe.csv") 
+
+df2<-df %>%
+  mutate(date=as.Date(date, format='%Y-%m-%d'))
+
+#period of analysis
+startdate<-as.Date("2000-06-01", format='%Y-%m-%d')
+enddate<-as.Date("2008-06-01", format='%Y-%m-%d')
+
+#opening data of metro
+opendate<-as.Date("2004-06-14", format='%Y-%m-%d')
+
+#date when groundbreak starts
+conststart <- as.Date("2001-01-17", format = "%Y-%m-%d")
+
+#Heavy-Duty Engine and Vehicle Standards
+HD_Engine <- as.Date("2007-01-01", format = "%Y-%m-%d")
+#Nonroad Diesel Rule
+NR_Diesel <- as.Date("2004-06-29", format = "%Y-%m-%d")
+#Minnesota Mercury Reduction Act
+MC_Reduction <- as.Date("2006-05-11", format = "%Y-%m-%d")
+#Next Gen Energy Act
+NG_Energy <- as.Date("2007-05-25", format = "%Y-%m-%d")
+#2030 Regional Development Framework
+RDF <- as.Date("2004-01-01", format = "%Y-%m-%d")
+#Clean Air Minnesota Initiative
+CA_Init <- as.Date("2003-01-01", format = "%Y-%m-%d")
+#Minnesota Renewable Energy Standard
+RE_Standard <- as.Date("2001-01-01", format = "%Y-%m-%d")
+#Vehicle Emissions Inspection and Maintenance Programs
+VE_Programs <- as.Date("2001-04-05", format = "%Y-%m-%d")
+
+df3 <- df2 %>%
+  filter(date>=startdate & date <= enddate) %>%
+  mutate(MetroOpen = ifelse(date >= opendate, 1, 0)) %>%
+  mutate(dow = wday(date)) %>%
+  mutate(construction = ifelse(date > conststart & date < opendate, 1, 0)) %>%
+  group_by(station_num) %>%
+  arrange(station_num, date) %>%
+  mutate(t = as.numeric(date-startdate)) %>%
+  mutate(t2 = t^2, t3 = t^3, t4 = t^4) %>%
+  mutate(l_tair = lag(Tair_f_tavg)) %>%
+  mutate(l_tair_2 = l_tair^2) %>%
+  mutate(l_tair_3 = l_tair^3) %>%
+  mutate(l_tair_4 = l_tair^4) %>%
+  mutate(l_qair = lag(Qair_f_tavg)) %>%
+  mutate(l_qair_2 = l_qair^2) %>%
+  mutate(l_qair_3 = l_qair^3) %>%
+  mutate(l_qair_4 = l_qair^4) %>%
+  mutate(l_wind = lag(Wind_f_tavg)) %>%
+  mutate(l_wind_2 = l_wind^2) %>%
+  mutate(l_wind_3 = l_wind^3) %>%
+  mutate(l_wind_4 = l_wind^4) %>%
+  mutate(CA_Init = ifelse(date >= CA_Init, 1, 0)) %>%
+  mutate(HD_Engine = ifelse(date >= HD_Engine, 1, 0)) %>%
+  mutate(MC_Reduction = ifelse(date >= MC_Reduction, 1, 0)) %>%
+  mutate(NG_Energy = ifelse(date >= NG_Energy, 1, 0)) %>%
+  mutate(NR_Diesel = ifelse(date >= NR_Diesel, 1, 0)) %>%
+  mutate(RDF = ifelse(date >= RDF, 1, 0)) %>%
+  mutate(RE_Standard = ifelse(date >= RE_Standard, 1, 0)) %>%
+  mutate(VE_Programs = ifelse(date >= VE_Programs, 1, 0))
+```
+
+This runs a station-level regression using the same regression model as
+used for column “X.4” in the regression table above.
+
+``` r
+summary(m1 <- lm(log(pm25) ~ MetroOpen:as.factor(station_num) +
+                   construction +
+                   Tair_f_tavg +
+                   l_tair +
+                   l_tair_2 +
+                   l_tair_3 +
+                   l_tair_4 +
+                   Qair_f_tavg +
+                   l_qair +
+                   l_qair_2 +
+                   l_qair_3 +
+                   l_qair_4 +
+                   Wind_f_tavg +
+                   l_wind +
+                   l_wind_2 +
+                   l_wind_3 +
+                   l_wind_4 +
+                   holiday +
+                   t +
+                   t2 +
+                   t3 +
+                   t4 +
+                   as.factor(month) +
+                   as.factor(dow)
+                   , data = df3))
+```
+
+
+    Call:
+    lm(formula = log(pm25) ~ MetroOpen:as.factor(station_num) + construction + 
+        Tair_f_tavg + l_tair + l_tair_2 + l_tair_3 + l_tair_4 + Qair_f_tavg + 
+        l_qair + l_qair_2 + l_qair_3 + l_qair_4 + Wind_f_tavg + l_wind + 
+        l_wind_2 + l_wind_3 + l_wind_4 + holiday + t + t2 + t3 + 
+        t4 + as.factor(month) + as.factor(dow), data = df3)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -2.05105 -0.29451  0.00039  0.31805  1.64288 
+
+    Coefficients:
+                                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)                        -3.082e+03  5.743e+02  -5.367 8.04e-08 ***
+    construction                       -1.765e-01  1.241e-02 -14.215  < 2e-16 ***
+    Tair_f_tavg                         8.146e-03  5.634e-04  14.458  < 2e-16 ***
+    l_tair                              4.285e+01  8.324e+00   5.148 2.64e-07 ***
+    l_tair_2                           -2.215e-01  4.517e-02  -4.904 9.42e-07 ***
+    l_tair_3                            5.043e-04  1.088e-04   4.636 3.55e-06 ***
+    l_tair_4                           -4.266e-07  9.810e-08  -4.348 1.37e-05 ***
+    Qair_f_tavg                         5.139e+01  1.214e+00  42.342  < 2e-16 ***
+    l_qair                              3.728e+02  2.160e+01  17.261  < 2e-16 ***
+    l_qair_2                           -5.320e+04  3.028e+03 -17.569  < 2e-16 ***
+    l_qair_3                            3.152e+06  1.769e+05  17.820  < 2e-16 ***
+    l_qair_4                           -6.650e+07  3.638e+06 -18.277  < 2e-16 ***
+    Wind_f_tavg                        -9.715e-02  1.563e-03 -62.140  < 2e-16 ***
+    l_wind                              5.594e-02  6.944e-02   0.806 0.420507    
+    l_wind_2                           -3.938e-02  2.612e-02  -1.508 0.131670    
+    l_wind_3                            5.261e-03  4.123e-03   1.276 0.201944    
+    l_wind_4                           -2.305e-04  2.307e-04  -0.999 0.317755    
+    holidayTRUE                        -2.014e-02  7.976e-03  -2.525 0.011563 *  
+    t                                   9.674e-05  6.239e-05   1.550 0.121027    
+    t2                                  1.959e-07  7.337e-08   2.670 0.007590 ** 
+    t3                                 -2.120e-10  3.335e-11  -6.355 2.09e-10 ***
+    t4                                  5.006e-14  5.240e-15   9.552  < 2e-16 ***
+    as.factor(month)August             -4.981e-01  1.035e-02 -48.111  < 2e-16 ***
+    as.factor(month)December            4.102e-01  9.178e-03  44.698  < 2e-16 ***
+    as.factor(month)February            4.716e-01  9.636e-03  48.938  < 2e-16 ***
+    as.factor(month)January             3.959e-01  9.626e-03  41.128  < 2e-16 ***
+    as.factor(month)July               -6.433e-01  1.126e-02 -57.120  < 2e-16 ***
+    as.factor(month)June               -5.285e-01  1.012e-02 -52.203  < 2e-16 ***
+    as.factor(month)March               2.995e-01  8.032e-03  37.290  < 2e-16 ***
+    as.factor(month)May                -2.632e-01  7.560e-03 -34.811  < 2e-16 ***
+    as.factor(month)November            2.423e-01  7.659e-03  31.635  < 2e-16 ***
+    as.factor(month)October            -6.053e-02  7.373e-03  -8.209 2.26e-16 ***
+    as.factor(month)September          -3.364e-01  8.743e-03 -38.481  < 2e-16 ***
+    as.factor(dow)2                     2.120e-02  5.240e-03   4.046 5.22e-05 ***
+    as.factor(dow)3                     2.000e-02  5.239e-03   3.817 0.000135 ***
+    as.factor(dow)4                     2.725e-02  5.240e-03   5.201 1.99e-07 ***
+    as.factor(dow)5                     8.576e-03  5.231e-03   1.640 0.101111    
+    as.factor(dow)6                     3.025e-02  5.253e-03   5.758 8.56e-09 ***
+    as.factor(dow)7                     5.619e-02  5.247e-03  10.710  < 2e-16 ***
+    MetroOpen:as.factor(station_num)1  -9.622e-02  1.753e-02  -5.489 4.05e-08 ***
+    MetroOpen:as.factor(station_num)2  -2.299e-01  1.753e-02 -13.117  < 2e-16 ***
+    MetroOpen:as.factor(station_num)3  -2.479e-01  1.753e-02 -14.143  < 2e-16 ***
+    MetroOpen:as.factor(station_num)4  -2.190e-01  1.753e-02 -12.491  < 2e-16 ***
+    MetroOpen:as.factor(station_num)5  -1.844e-01  1.753e-02 -10.520  < 2e-16 ***
+    MetroOpen:as.factor(station_num)6  -2.299e-01  1.753e-02 -13.117  < 2e-16 ***
+    MetroOpen:as.factor(station_num)7  -2.299e-01  1.753e-02 -13.117  < 2e-16 ***
+    MetroOpen:as.factor(station_num)8  -1.731e-01  1.753e-02  -9.875  < 2e-16 ***
+    MetroOpen:as.factor(station_num)9  -1.464e-01  1.753e-02  -8.352  < 2e-16 ***
+    MetroOpen:as.factor(station_num)10 -9.622e-02  1.753e-02  -5.489 4.05e-08 ***
+    MetroOpen:as.factor(station_num)11 -1.596e-01  1.753e-02  -9.107  < 2e-16 ***
+    MetroOpen:as.factor(station_num)12 -1.753e-01  1.753e-02 -10.002  < 2e-16 ***
+    MetroOpen:as.factor(station_num)13 -1.763e-01  1.753e-02 -10.058  < 2e-16 ***
+    MetroOpen:as.factor(station_num)14 -1.690e-01  1.753e-02  -9.643  < 2e-16 ***
+    MetroOpen:as.factor(station_num)15 -1.655e-01  1.753e-02  -9.440  < 2e-16 ***
+    MetroOpen:as.factor(station_num)16 -2.158e-01  1.753e-02 -12.309  < 2e-16 ***
+    MetroOpen:as.factor(station_num)17 -1.795e-01  1.753e-02 -10.242  < 2e-16 ***
+    MetroOpen:as.factor(station_num)18 -2.239e-01  1.753e-02 -12.773  < 2e-16 ***
+    MetroOpen:as.factor(station_num)19 -1.852e-01  1.753e-02 -10.568  < 2e-16 ***
+    MetroOpen:as.factor(station_num)20 -2.735e-01  1.753e-02 -15.602  < 2e-16 ***
+    MetroOpen:as.factor(station_num)21 -2.158e-01  1.753e-02 -12.309  < 2e-16 ***
+    MetroOpen:as.factor(station_num)22 -1.592e-01  1.753e-02  -9.083  < 2e-16 ***
+    MetroOpen:as.factor(station_num)23 -1.814e-01  1.753e-02 -10.346  < 2e-16 ***
+    MetroOpen:as.factor(station_num)24 -1.158e-01  1.753e-02  -6.604 4.03e-11 ***
+    MetroOpen:as.factor(station_num)25 -1.066e-01  1.753e-02  -6.082 1.19e-09 ***
+    MetroOpen:as.factor(station_num)26 -1.830e-01  1.753e-02 -10.442  < 2e-16 ***
+    MetroOpen:as.factor(station_num)27 -1.660e-01  1.753e-02  -9.471  < 2e-16 ***
+    MetroOpen:as.factor(station_num)28 -2.158e-01  1.753e-02 -12.309  < 2e-16 ***
+    MetroOpen:as.factor(station_num)29 -1.401e-01  1.753e-02  -7.991 1.35e-15 ***
+    MetroOpen:as.factor(station_num)30 -2.152e-01  1.753e-02 -12.276  < 2e-16 ***
+    MetroOpen:as.factor(station_num)31 -1.811e-01  1.753e-02 -10.332  < 2e-16 ***
+    MetroOpen:as.factor(station_num)32 -1.668e-01  1.753e-02  -9.517  < 2e-16 ***
+    MetroOpen:as.factor(station_num)33 -1.794e-01  1.753e-02 -10.233  < 2e-16 ***
+    MetroOpen:as.factor(station_num)34 -2.158e-01  1.753e-02 -12.309  < 2e-16 ***
+    MetroOpen:as.factor(station_num)35 -1.797e-01  1.753e-02 -10.250  < 2e-16 ***
+    MetroOpen:as.factor(station_num)36 -1.763e-01  1.753e-02 -10.058  < 2e-16 ***
+    MetroOpen:as.factor(station_num)37 -2.033e-01  1.753e-02 -11.597  < 2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 0.4579 on 108038 degrees of freedom
+      (37 observations deleted due to missingness)
+    Multiple R-squared:  0.1909,    Adjusted R-squared:  0.1903 
+    F-statistic: 339.8 on 75 and 108038 DF,  p-value: < 2.2e-16
+
+The code below prints out the station-level effect and the p-values
+
+``` r
+c <- coef(m1)
+len_coef<-length(coef(m1))
+
+#get coefficients of the station-level effect
+coef<-coef(m1)[(len_coef-36): len_coef]
+
+#get p values of the station-level effect (p<0.05 is statistically significant)
+pval<-summary(m1)$coefficients[,4][(len_coef-3): len_coef]
+
+kable(cbind(coef, pval), digits=2)
+```
+
+    Warning in cbind(coef, pval): number of rows of result is not a multiple of
+    vector length (arg 2)
+
+|                                    |  coef | pval |
+|:-----------------------------------|------:|-----:|
+| MetroOpen:as.factor(station_num)1  | -0.10 |    0 |
+| MetroOpen:as.factor(station_num)2  | -0.23 |    0 |
+| MetroOpen:as.factor(station_num)3  | -0.25 |    0 |
+| MetroOpen:as.factor(station_num)4  | -0.22 |    0 |
+| MetroOpen:as.factor(station_num)5  | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)6  | -0.23 |    0 |
+| MetroOpen:as.factor(station_num)7  | -0.23 |    0 |
+| MetroOpen:as.factor(station_num)8  | -0.17 |    0 |
+| MetroOpen:as.factor(station_num)9  | -0.15 |    0 |
+| MetroOpen:as.factor(station_num)10 | -0.10 |    0 |
+| MetroOpen:as.factor(station_num)11 | -0.16 |    0 |
+| MetroOpen:as.factor(station_num)12 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)13 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)14 | -0.17 |    0 |
+| MetroOpen:as.factor(station_num)15 | -0.17 |    0 |
+| MetroOpen:as.factor(station_num)16 | -0.22 |    0 |
+| MetroOpen:as.factor(station_num)17 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)18 | -0.22 |    0 |
+| MetroOpen:as.factor(station_num)19 | -0.19 |    0 |
+| MetroOpen:as.factor(station_num)20 | -0.27 |    0 |
+| MetroOpen:as.factor(station_num)21 | -0.22 |    0 |
+| MetroOpen:as.factor(station_num)22 | -0.16 |    0 |
+| MetroOpen:as.factor(station_num)23 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)24 | -0.12 |    0 |
+| MetroOpen:as.factor(station_num)25 | -0.11 |    0 |
+| MetroOpen:as.factor(station_num)26 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)27 | -0.17 |    0 |
+| MetroOpen:as.factor(station_num)28 | -0.22 |    0 |
+| MetroOpen:as.factor(station_num)29 | -0.14 |    0 |
+| MetroOpen:as.factor(station_num)30 | -0.22 |    0 |
+| MetroOpen:as.factor(station_num)31 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)32 | -0.17 |    0 |
+| MetroOpen:as.factor(station_num)33 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)34 | -0.22 |    0 |
+| MetroOpen:as.factor(station_num)35 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)36 | -0.18 |    0 |
+| MetroOpen:as.factor(station_num)37 | -0.20 |    0 |
+
+# Query demographic data
+
+Helpful resource:
+<https://walker-data.com/tidycensus/articles/basic-usage.html>
+
+Get census key
+
+``` r
+library(tidycensus)
+api_key <- "Your_Census_API_Key"
+census_api_key(api_key, install=TRUE, overwrite = T)
+readRenviron("~/.Renviron")
+```
+
+Identify variables for querying
+
+``` r
+vars<-load_variables(year=2000, dataset="sf1", cache = TRUE)
+```
+
+Query variables (The codes represent all age groups for male and female
+and will be renamed in the next step). We chose age groups in particular
+because we believe there could be a disparity between how much the light
+rail impacts younger vs. older people. Since younger people such as
+teenagers and college students without their own means of transportation
+may have a higher likelihood of using the light rail, we believe they
+may be more affected.
+
+``` r
+targetvars<-c("P012002", "P012003", "P012004", "P012005", "P012006", "P012007", "P012008", "P012009", "P012010", "P012011", "P012012", "P012013", "P012014", "P012015", "P012016", "P012017", "P012018", "P012019", "P012020", "P012021", "P012022", "P012023", "P012024", "P012025", "P012026", "P012027", "P012028", "P012029", "P012030", "P012031", "P012032", "P012033", "P012034", "P012035", "P012036", "P012037", "P012038", "P012039", "P012040", "P012041", "P012042", "P012043", "P012044", "P012045", "P012046", "P012047", "P012048", "P012049")
+
+age1<-get_decennial(year = 2000, geography = "block", variables=targetvars, state="MN", county="Hennepin", output="wide")
+age2<-get_decennial(year = 2000, geography = "block", variables=targetvars, state="MN", county="Ramsey", output="wide")
+age<-rbind(age1,age2)
+```
+
+Rename columns
+
+``` r
+age_ranges<-age %>%
+  rename(total_male="P012002", total_male_under_5_years="P012003", total_male_5_to_9_years="P012004", total_male_10_to_14_years="P012005", total_male_15_to_17_years="P012006", total_male_18_and_19_years="P012007", total_male_20_years="P012008", total_male_21_years="P012009", total_male_22_to_24_years="P012010", total_male_25_to_29_years="P012011", total_male_30_to_34_years="P012012", total_male_35_to_39_years="P012013", total_male_40_to_44_years="P012014", total_male_45_to_49_years="P012015", total_male_50_to_54_years="P012016", total_male_55_to_59_years="P012017", total_male_60_and_61_years="P012018", total_male_62_to_64_years="P012019", total_male_65_and_66_years="P012020", total_male_67_to_69_years="P012021", total_male_70_to_74_years="P012022", total_male_75_to_79_years="P012023", total_male_80_to_84_years="P012024", total_male_85_years_and_over="P012025", total_female="P012026", total_female_under_5_years="P012027", total_female_5_to_9_years="P012028", total_female_10_to_14_years="P012029", total_female_15_to_17_years="P012030", total_female_18_and_19_years="P012031", total_female_20_years="P012032", total_female_21_years="P012033", total_female_22_to_24_years="P012034", total_female_25_to_29_years="P012035", total_female_30_to_34_years="P012036", total_female_35_to_39_years="P012037", total_female_40_to_44_years="P012038", total_female_45_to_49_years="P012039", total_female_50_to_54_years="P012040", total_female_55_to_59_years="P012041", total_female_60_and_61_years="P012042", total_female_62_to_64_years="P012043", total_female_65_and_66_years="P012044", total_female_67_to_69_years="P012045", total_female_70_to_74_years="P012046", total_female_75_to_79_years="P012047", total_female_80_to_84_years="P012048", total_female_85_years_and_over="P012049")
+```
+
+# Calculate affected demographic group
+
+``` r
+library("terra")
+```
+
+``` r
+buff<-vect("Station_Buffers.shp")
+plot(buff)
+```
+
+Download shapefiles from [tigris
+package](https://github.com/walkerke/tigris)
+
+``` r
+shape<-tigris::blocks(state="MN", county="Ramsey", class="sp", year=2000)
+shape2<-tigris::blocks(state="MN", county="Hennepin", class="sp", year=2000)
+shapevect1<-vect(shape)
+shapevect2<-vect(shape2)
+shapevect<-rbind(shapevect1, shapevect2)
+shapedf<-as.data.frame(shapevect)
+
+buff2 <- subset(buff, buff$FID == 19)
+plot(buff)
+lines(buff2, col = 'purple')
+```
+
+``` r
+blockage<-merge(shapevect, age_ranges, by.x="BLKIDFP00", by.y="GEOID")
+
+blockage$blockarea<-expanse(blockage, unit="m")
+
+blockagedf<-as.data.frame(blockage)
+
+summary(blockagedf)
+
+#100 percent match
+```
+
+Intersect blocks with buffers
+
+``` r
+output<-c()
+
+for (i in 0:36) {
+  buff2 <- subset(buff, buff$FID == i)
+
+  int<-crop(blockage, buff2)
+
+  int$intarea<-expanse(int, unit="m")
+
+  intdf<-as.data.frame(int)%>%
+    mutate(frac_area=intarea/blockarea) %>%
+    mutate(total_male=total_male*frac_area, 
+         total_male_under_5_years=total_male_under_5_years*frac_area, 
+         total_male_5_to_9_years=total_male_5_to_9_years*frac_area, 
+         total_male_10_to_14_years=total_male_10_to_14_years*frac_area, 
+         total_male_15_to_17_years=total_male_15_to_17_years*frac_area, 
+         total_male_18_and_19_years=total_male_18_and_19_years*frac_area, 
+         total_male_20_years=total_male_20_years*frac_area, 
+         total_male_21_years=total_male_21_years*frac_area, 
+         total_male_22_to_24_years=total_male_22_to_24_years*frac_area, 
+         total_male_25_to_29_years=total_male_25_to_29_years*frac_area, 
+         total_male_30_to_34_years=total_male_30_to_34_years*frac_area, 
+         total_male_35_to_39_years=total_male_35_to_39_years*frac_area, 
+         total_male_40_to_44_years=total_male_40_to_44_years*frac_area, 
+         total_male_45_to_49_years=total_male_45_to_49_years*frac_area, 
+         total_male_50_to_54_years=total_male_50_to_54_years*frac_area, 
+         total_male_55_to_59_years=total_male_55_to_59_years*frac_area, 
+         total_male_60_and_61_years=total_male_60_and_61_years*frac_area, 
+         total_male_62_to_64_years=total_male_62_to_64_years*frac_area, 
+         total_male_65_and_66_years=total_male_65_and_66_years*frac_area, 
+         total_male_67_to_69_years=total_male_67_to_69_years*frac_area, 
+         total_male_70_to_74_years=total_male_70_to_74_years*frac_area, 
+         total_male_75_to_79_years=total_male_75_to_79_years*frac_area, 
+         total_male_80_to_84_years=total_male_80_to_84_years*frac_area, 
+         total_male_85_years_and_over=total_male_85_years_and_over*frac_area,
+         total_female=total_female*frac_area, 
+         total_female_under_5_years=total_female_under_5_years*frac_area, 
+         total_female_5_to_9_years=total_female_5_to_9_years*frac_area, 
+         total_female_10_to_14_years=total_female_10_to_14_years*frac_area, 
+         total_female_15_to_17_years=total_female_15_to_17_years*frac_area, 
+         total_female_18_and_19_years=total_female_18_and_19_years*frac_area, 
+         total_female_20_years=total_female_20_years*frac_area, 
+         total_female_21_years=total_female_21_years*frac_area, 
+         total_female_22_to_24_years=total_female_22_to_24_years*frac_area, 
+         total_female_25_to_29_years=total_female_25_to_29_years*frac_area, 
+         total_female_30_to_34_years=total_female_30_to_34_years*frac_area, 
+         total_female_35_to_39_years=total_female_35_to_39_years*frac_area, 
+         total_female_40_to_44_years=total_female_40_to_44_years*frac_area, 
+         total_female_45_to_49_years=total_female_45_to_49_years*frac_area, 
+         total_female_50_to_54_years=total_female_50_to_54_years*frac_area, 
+         total_female_55_to_59_years=total_female_55_to_59_years*frac_area, 
+         total_female_60_and_61_years=total_female_60_and_61_years*frac_area, 
+         total_female_62_to_64_years=total_female_62_to_64_years*frac_area, 
+         total_female_65_and_66_years=total_female_65_and_66_years*frac_area, 
+         total_female_67_to_69_years=total_female_67_to_69_years*frac_area, 
+         total_female_70_to_74_years=total_female_70_to_74_years*frac_area, 
+         total_female_75_to_79_years=total_female_75_to_79_years*frac_area, 
+         total_female_80_to_84_years=total_female_80_to_84_years*frac_area, 
+         total_female_85_years_and_over=total_female_85_years_and_over*frac_area) %>%
+    summarize(total_male=sum(total_male), 
+          total_male_under_5_years=sum(total_male_under_5_years), 
+          total_male_5_to_9_years=sum(total_male_5_to_9_years), 
+          total_male_10_to_14_years=sum(total_male_10_to_14_years), 
+          total_male_15_to_17_years=sum(total_male_15_to_17_years), 
+          total_male_18_and_19_years=sum(total_male_18_and_19_years), 
+          total_male_20_years=sum(total_male_20_years), 
+          total_male_21_years=sum(total_male_21_years), 
+          total_male_22_to_24_years=sum(total_male_22_to_24_years), 
+          total_male_25_to_29_years=sum(total_male_25_to_29_years), 
+          total_male_30_to_34_years=sum(total_male_30_to_34_years), 
+          total_male_35_to_39_years=sum(total_male_35_to_39_years), 
+          total_male_40_to_44_years=sum(total_male_40_to_44_years), 
+          total_male_45_to_49_years=sum(total_male_45_to_49_years), 
+          total_male_50_to_54_years=sum(total_male_50_to_54_years), 
+          total_male_55_to_59_years=sum(total_male_55_to_59_years), 
+          total_male_60_and_61_years=sum(total_male_60_and_61_years), 
+          total_male_62_to_64_years=sum(total_male_62_to_64_years), 
+          total_male_65_and_66_years=sum(total_male_65_and_66_years), 
+          total_male_67_to_69_years=sum(total_male_67_to_69_years), 
+          total_male_70_to_74_years=sum(total_male_70_to_74_years), 
+          total_male_75_to_79_years=sum(total_male_75_to_79_years), 
+          total_male_80_to_84_years=sum(total_male_80_to_84_years), 
+          total_male_85_years_and_over=sum(total_male_85_years_and_over), 
+          total_female=sum(total_female), 
+          total_female_under_5_years=sum(total_female_under_5_years), 
+          total_female_5_to_9_years=sum(total_female_5_to_9_years), 
+          total_female_10_to_14_years=sum(total_female_10_to_14_years), 
+          total_female_15_to_17_years=sum(total_female_15_to_17_years), 
+          total_female_18_and_19_years=sum(total_female_18_and_19_years), 
+          total_female_20_years=sum(total_female_20_years), 
+          total_female_21_years=sum(total_female_21_years), 
+          total_female_22_to_24_years=sum(total_female_22_to_24_years), 
+          total_female_25_to_29_years=sum(total_female_25_to_29_years), 
+          total_female_30_to_34_years=sum(total_female_30_to_34_years), 
+          total_female_35_to_39_years=sum(total_female_35_to_39_years), 
+          total_female_40_to_44_years=sum(total_female_40_to_44_years), 
+          total_female_45_to_49_years=sum(total_female_45_to_49_years), 
+          total_female_50_to_54_years=sum(total_female_50_to_54_years), 
+          total_female_55_to_59_years=sum(total_female_55_to_59_years), 
+          total_female_60_and_61_years=sum(total_female_60_and_61_years), 
+          total_female_62_to_64_years=sum(total_female_62_to_64_years), 
+          total_female_65_and_66_years=sum(total_female_65_and_66_years), 
+          total_female_67_to_69_years=sum(total_female_67_to_69_years), 
+          total_female_70_to_74_years=sum(total_female_70_to_74_years), 
+          total_female_75_to_79_years=sum(total_female_75_to_79_years), 
+          total_female_80_to_84_years=sum(total_female_80_to_84_years), 
+          total_female_85_years_and_over=sum(total_female_85_years_and_over)) %>%
+  mutate(
+      pct_total_male = total_male * 100 / total_male,
+      pct_total_male_under_5_years = total_male_under_5_years * 100 / total_male,
+      pct_total_male_5_to_9_years = total_male_5_to_9_years * 100 / total_male,
+      pct_total_male_10_to_14_years = total_male_10_to_14_years * 100 / total_male,
+      pct_total_male_15_to_17_years = total_male_15_to_17_years * 100 / total_male,
+      pct_total_male_18_and_19_years = total_male_18_and_19_years * 100 / total_male,
+      pct_total_male_20_years = total_male_20_years * 100 / total_male,
+      pct_total_male_21_years = total_male_21_years * 100 / total_male,
+      pct_total_male_22_to_24_years = total_male_22_to_24_years * 100 / total_male,
+      pct_total_male_25_to_29_years = total_male_25_to_29_years * 100 / total_male,
+      pct_total_male_30_to_34_years = total_male_30_to_34_years * 100 / total_male,
+      pct_total_male_35_to_39_years = total_male_35_to_39_years * 100 / total_male,
+      pct_total_male_40_to_44_years = total_male_40_to_44_years * 100 / total_male,
+      pct_total_male_45_to_49_years = total_male_45_to_49_years * 100 / total_male,
+      pct_total_male_50_to_54_years = total_male_50_to_54_years * 100 / total_male,
+      pct_total_male_55_to_59_years = total_male_55_to_59_years * 100 / total_male,
+      pct_total_male_60_and_61_years = total_male_60_and_61_years * 100 / total_male,
+      pct_total_male_62_to_64_years = total_male_62_to_64_years * 100 / total_male,
+      pct_total_male_65_and_66_years = total_male_65_and_66_years * 100 / total_male,
+      pct_total_male_67_to_69_years = total_male_67_to_69_years * 100 / total_male,
+      pct_total_male_70_to_74_years = total_male_70_to_74_years * 100 / total_male,
+      pct_total_male_75_to_79_years = total_male_75_to_79_years * 100 / total_male,
+      pct_total_male_80_to_84_years = total_male_80_to_84_years * 100 / total_male,
+      pct_total_male_85_years_and_over = total_male_85_years_and_over * 100 / total_male,
+      pct_total_female = total_female * 100 / total_female,
+      pct_total_female_under_5_years = total_female_under_5_years * 100 / total_female,
+      pct_total_female_5_to_9_years = total_female_5_to_9_years * 100 / total_female,
+      pct_total_female_10_to_14_years = total_female_10_to_14_years * 100 / total_female,
+      pct_total_female_15_to_17_years = total_female_15_to_17_years * 100 / total_female,
+      pct_total_female_18_and_19_years = total_female_18_and_19_years * 100 / total_female,
+      pct_total_female_20_years = total_female_20_years * 100 / total_female,
+      pct_total_female_21_years = total_female_21_years * 100 / total_female,
+      pct_total_female_22_to_24_years = total_female_22_to_24_years * 100 / total_female,
+      pct_total_female_25_to_29_years = total_female_25_to_29_years * 100 / total_female,
+      pct_total_female_30_to_34_years = total_female_30_to_34_years * 100 / total_female,
+      pct_total_female_35_to_39_years = total_female_35_to_39_years * 100 / total_female,
+      pct_total_female_40_to_44_years = total_female_40_to_44_years * 100 / total_female,
+      pct_total_female_45_to_49_years = total_female_45_to_49_years * 100 / total_female,
+      pct_total_female_50_to_54_years = total_female_50_to_54_years * 100 / total_female,
+      pct_total_female_55_to_59_years = total_female_55_to_59_years * 100 / total_female,
+      pct_total_female_60_and_61_years = total_female_60_and_61_years * 100 / total_female,
+      pct_total_female_62_to_64_years = total_female_62_to_64_years * 100 / total_female,
+      pct_total_female_65_and_66_years = total_female_65_and_66_years * 100 / total_female,
+      pct_total_female_67_to_69_years = total_female_67_to_69_years * 100 / total_female,
+      pct_total_female_70_to_74_years = total_female_70_to_74_years * 100 / total_female,
+      pct_total_female_75_to_79_years = total_female_75_to_79_years * 100 / total_female,
+      pct_total_female_80_to_84_years = total_female_80_to_84_years * 100 / total_female,
+      pct_total_female_85_years_and_over = total_female_85_years_and_over * 100 / total_female
+    )
+  
+  output<-rbind(output, intdf)
+  
+}
+ 
+write.csv(output, "census_data_full.csv", row.names = F)
+```
+
+Summarize demographic groups that live near light rail stations
+
+``` r
+sum_demog<-output %>%
+  select(
+  pct_total_male, 
+  pct_total_male_under_5_years, 
+  pct_total_male_5_to_9_years, 
+  pct_total_male_10_to_14_years, 
+  pct_total_male_15_to_17_years,
+  pct_total_male_18_and_19_years, 
+  pct_total_male_20_years, 
+  pct_total_male_21_years, 
+  pct_total_male_22_to_24_years, 
+  pct_total_male_25_to_29_years, 
+  pct_total_male_30_to_34_years, 
+  pct_total_male_35_to_39_years, 
+  pct_total_male_40_to_44_years, 
+  pct_total_male_45_to_49_years, 
+  pct_total_male_50_to_54_years, 
+  pct_total_male_55_to_59_years, 
+  pct_total_male_60_and_61_years, 
+  pct_total_male_62_to_64_years, 
+  pct_total_male_65_and_66_years, 
+  pct_total_male_67_to_69_years, 
+  pct_total_male_70_to_74_years, 
+  pct_total_male_75_to_79_years, 
+  pct_total_male_80_to_84_years, 
+  pct_total_male_85_years_and_over, 
+  pct_total_female, 
+  pct_total_female_under_5_years, 
+  pct_total_female_5_to_9_years, 
+  pct_total_female_10_to_14_years, 
+  pct_total_female_15_to_17_years, 
+  pct_total_female_18_and_19_years, 
+  pct_total_female_20_years, 
+  pct_total_female_21_years, 
+  pct_total_female_22_to_24_years, 
+  pct_total_female_25_to_29_years, 
+  pct_total_female_30_to_34_years, 
+  pct_total_female_35_to_39_years, 
+  pct_total_female_40_to_44_years, 
+  pct_total_female_45_to_49_years, 
+  pct_total_female_50_to_54_years, 
+  pct_total_female_55_to_59_years, 
+  pct_total_female_60_and_61_years, 
+  pct_total_female_62_to_64_years, 
+  pct_total_female_65_and_66_years, 
+  pct_total_female_67_to_69_years, 
+  pct_total_female_70_to_74_years, 
+  pct_total_female_75_to_79_years, 
+  pct_total_female_80_to_84_years, 
+  pct_total_female_85_years_and_over
+)
+
+
+kable(sum_demog, digits=2)
+```
+
+This merges the station-level demographic data with station-level
+pollution reduction data and
+
+calculates the average emissions that each demographic group sees.
+
+``` r
+alldf<-cbind(output, coef)
+```
+
+``` r
+reddf<-alldf %>%
+  mutate(total_male_change=total_male*coef,
+       total_male_under_5_years_change=total_male_under_5_years*coef,
+       total_male_5_to_9_years_change=total_male_5_to_9_years*coef,
+       total_male_10_to_14_years_change=total_male_10_to_14_years*coef,
+       total_male_15_to_17_years_change=total_male_15_to_17_years*coef,
+       total_male_18_and_19_years_change=total_male_18_and_19_years*coef,
+       total_male_20_years_change=total_male_20_years*coef,
+       total_male_21_years_change=total_male_21_years*coef,
+       total_male_22_to_24_years_change=total_male_22_to_24_years*coef,
+       total_male_25_to_29_years_change=total_male_25_to_29_years*coef,
+       total_male_30_to_34_years_change=total_male_30_to_34_years*coef,
+       total_male_35_to_39_years_change=total_male_35_to_39_years*coef,
+       total_male_40_to_44_years_change=total_male_40_to_44_years*coef,
+       total_male_45_to_49_years_change=total_male_45_to_49_years*coef,
+       total_male_50_to_54_years_change=total_male_50_to_54_years*coef,
+       total_male_55_to_59_years_change=total_male_55_to_59_years*coef,
+       total_male_60_and_61_years_change=total_male_60_and_61_years*coef,
+       total_male_62_to_64_years_change=total_male_62_to_64_years*coef,
+       total_male_65_and_66_years_change=total_male_65_and_66_years*coef,
+       total_male_67_to_69_years_change=total_male_67_to_69_years*coef,
+       total_male_70_to_74_years_change=total_male_70_to_74_years*coef,
+       total_male_75_to_79_years_change=total_male_75_to_79_years*coef,
+       total_male_80_to_84_years_change=total_male_80_to_84_years*coef,
+       total_male_85_years_and_over_change=total_male_85_years_and_over*coef,
+       total_female_change=total_female*coef,
+       total_female_under_5_years_change=total_female_under_5_years*coef,
+       total_female_5_to_9_years_change=total_female_5_to_9_years*coef,
+       total_female_10_to_14_years_change=total_female_10_to_14_years*coef,
+       total_female_15_to_17_years_change=total_female_15_to_17_years*coef,
+       total_female_18_and_19_years_change=total_female_18_and_19_years*coef,
+       total_female_20_years_change=total_female_20_years*coef,
+       total_female_21_years_change=total_female_21_years*coef,
+       total_female_22_to_24_years_change=total_female_22_to_24_years*coef,
+       total_female_25_to_29_years_change=total_female_25_to_29_years*coef,
+       total_female_30_to_34_years_change=total_female_30_to_34_years*coef,
+       total_female_35_to_39_years_change=total_female_35_to_39_years*coef,
+       total_female_40_to_44_years_change=total_female_40_to_44_years*coef,
+       total_female_45_to_49_years_change=total_female_45_to_49_years*coef,
+       total_female_50_to_54_years_change=total_female_50_to_54_years*coef,
+       total_female_55_to_59_years_change=total_female_55_to_59_years*coef,
+       total_female_60_and_61_years_change=total_female_60_and_61_years*coef,
+       total_female_62_to_64_years_change=total_female_62_to_64_years*coef,
+       total_female_65_and_66_years_change=total_female_65_and_66_years*coef,
+       total_female_67_to_69_years_change=total_female_67_to_69_years*coef,
+       total_female_70_to_74_years_change=total_female_70_to_74_years*coef,
+       total_female_75_to_79_years_change=total_female_75_to_79_years*coef,
+       total_female_80_to_84_years_change=total_female_80_to_84_years*coef,
+       total_female_85_years_and_over_change=total_female_85_years_and_over*coef) %>%
+summarize(total_male_change_sum=sum(total_male_change),
+          total_male_under_5_years_change_sum=sum(total_male_under_5_years_change),
+          total_male_5_to_9_years_change_sum=sum(total_male_5_to_9_years_change),
+          total_male_10_to_14_years_change_sum=sum(total_male_10_to_14_years_change),
+          total_male_15_to_17_years_change_sum=sum(total_male_15_to_17_years_change),
+          total_male_18_and_19_years_change_sum=sum(total_male_18_and_19_years_change),
+          total_male_20_years_change_sum=sum(total_male_20_years_change),
+          total_male_21_years_change_sum=sum(total_male_21_years_change),
+          total_male_22_to_24_years_change_sum=sum(total_male_22_to_24_years_change),
+          total_male_25_to_29_years_change_sum=sum(total_male_25_to_29_years_change),
+          total_male_30_to_34_years_change_sum=sum(total_male_30_to_34_years_change),
+          total_male_35_to_39_years_change_sum=sum(total_male_35_to_39_years_change),
+          total_male_40_to_44_years_change_sum=sum(total_male_40_to_44_years_change),
+          total_male_45_to_49_years_change_sum=sum(total_male_45_to_49_years_change),
+          total_male_50_to_54_years_change_sum=sum(total_male_50_to_54_years_change),
+          total_male_55_to_59_years_change_sum=sum(total_male_55_to_59_years_change),
+          total_male_60_and_61_years_change_sum=sum(total_male_60_and_61_years_change),
+          total_male_62_to_64_years_change_sum=sum(total_male_62_to_64_years_change),
+          total_male_65_and_66_years_change_sum=sum(total_male_65_and_66_years_change),
+          total_male_67_to_69_years_change_sum=sum(total_male_67_to_69_years_change),
+          total_male_70_to_74_years_change_sum=sum(total_male_70_to_74_years_change),
+          total_male_75_to_79_years_change_sum=sum(total_male_75_to_79_years_change),
+          total_male_80_to_84_years_change_sum=sum(total_male_80_to_84_years_change),
+          total_male_85_years_and_over_change_sum=sum(total_male_85_years_and_over_change),
+          total_female_change_sum=sum(total_female_change),
+          total_female_under_5_years_change_sum=sum(total_female_under_5_years_change),
+          total_female_5_to_9_years_change_sum=sum(total_female_5_to_9_years_change),
+          total_female_10_to_14_years_change_sum=sum(total_female_10_to_14_years_change),
+          total_female_15_to_17_years_change_sum=sum(total_female_15_to_17_years_change),
+          total_female_18_and_19_years_change_sum=sum(total_female_18_and_19_years_change),
+          total_female_20_years_change_sum=sum(total_female_20_years_change),
+          total_female_21_years_change_sum=sum(total_female_21_years_change),
+          total_female_22_to_24_years_change_sum=sum(total_female_22_to_24_years_change),
+          total_female_25_to_29_years_change_sum=sum(total_female_25_to_29_years_change),
+          total_female_30_to_34_years_change_sum=sum(total_female_30_to_34_years_change),
+          total_female_35_to_39_years_change_sum=sum(total_female_35_to_39_years_change),
+          total_female_40_to_44_years_change_sum=sum(total_female_40_to_44_years_change),
+          total_female_45_to_49_years_change_sum=sum(total_female_45_to_49_years_change),
+          total_female_50_to_54_years_change_sum=sum(total_female_50_to_54_years_change),
+          total_female_55_to_59_years_change_sum=sum(total_female_55_to_59_years_change),
+          total_female_60_and_61_years_change_sum=sum(total_female_60_and_61_years_change),
+          total_female_62_to_64_years_change_sum=sum(total_female_62_to_64_years_change),
+          total_female_65_and_66_years_change_sum=sum(total_female_65_and_66_years_change),
+          total_female_67_to_69_years_change_sum=sum(total_female_67_to_69_years_change),
+          total_female_70_to_74_years_change_sum=sum(total_female_70_to_74_years_change),
+          total_female_75_to_79_years_change_sum=sum(total_female_75_to_79_years_change),
+          total_female_80_to_84_years_change_sum=sum(total_female_80_to_84_years_change),
+          total_female_85_years_and_over_change_sum=sum(total_female_85_years_and_over_change),
+          total_male=sum(total_male),
+          total_male_under_5_years=sum(total_male_under_5_years),
+          total_male_5_to_9_years=sum(total_male_5_to_9_years),
+          total_male_10_to_14_years=sum(total_male_10_to_14_years),
+          total_male_15_to_17_years=sum(total_male_15_to_17_years),
+          total_male_18_and_19_years=sum(total_male_18_and_19_years),
+          total_male_20_years=sum(total_male_20_years),
+          total_male_21_years=sum(total_male_21_years),
+          total_male_22_to_24_years=sum(total_male_22_to_24_years),
+          total_male_25_to_29_years=sum(total_male_25_to_29_years),
+          total_male_30_to_34_years=sum(total_male_30_to_34_years),
+          total_male_35_to_39_years=sum(total_male_35_to_39_years),
+          total_male_40_to_44_years=sum(total_male_40_to_44_years),
+          total_male_45_to_49_years=sum(total_male_45_to_49_years),
+          total_male_50_to_54_years=sum(total_male_50_to_54_years),
+          total_male_55_to_59_years=sum(total_male_55_to_59_years),
+          total_male_60_and_61_years=sum(total_male_60_and_61_years),
+          total_male_62_to_64_years=sum(total_male_62_to_64_years),
+          total_male_65_and_66_years=sum(total_male_65_and_66_years),
+          total_male_67_to_69_years=sum(total_male_67_to_69_years),
+          total_male_70_to_74_years=sum(total_male_70_to_74_years),
+          total_male_75_to_79_years=sum(total_male_75_to_79_years),
+          total_male_80_to_84_years=sum(total_male_80_to_84_years),
+          total_male_85_years_and_over=sum(total_male_85_years_and_over),
+          total_female=sum(total_female),
+          total_female_under_5_years=sum(total_female_under_5_years),
+          total_female_5_to_9_years=sum(total_female_5_to_9_years),
+          total_female_10_to_14_years=sum(total_female_10_to_14_years),
+          total_female_15_to_17_years=sum(total_female_15_to_17_years),
+          total_female_18_and_19_years=sum(total_female_18_and_19_years),
+          total_female_20_years=sum(total_female_20_years),
+          total_female_21_years=sum(total_female_21_years),
+          total_female_22_to_24_years=sum(total_female_22_to_24_years),
+          total_female_25_to_29_years=sum(total_female_25_to_29_years),
+          total_female_30_to_34_years=sum(total_female_30_to_34_years),
+          total_female_35_to_39_years=sum(total_female_35_to_39_years),
+          total_female_40_to_44_years=sum(total_female_40_to_44_years),
+          total_female_45_to_49_years=sum(total_female_45_to_49_years),
+          total_female_50_to_54_years=sum(total_female_50_to_54_years),
+          total_female_55_to_59_years=sum(total_female_55_to_59_years),
+          total_female_60_and_61_years=sum(total_female_60_and_61_years),
+          total_female_62_to_64_years=sum(total_female_62_to_64_years),
+          total_female_65_and_66_years=sum(total_female_65_and_66_years),
+          total_female_67_to_69_years=sum(total_female_67_to_69_years),
+          total_female_70_to_74_years=sum(total_female_70_to_74_years),
+          total_female_75_to_79_years=sum(total_female_75_to_79_years),
+          total_female_80_to_84_years=sum(total_female_80_to_84_years),
+          total_female_85_years_and_over=sum(total_female_85_years_and_over)) %>%
+mutate(total_male_change_ave=total_male_change_sum*100/total_male,
+       total_male_under_5_years_change_ave=total_male_under_5_years_change_sum*100/total_male_under_5_years,
+       total_male_5_to_9_years_change_ave=total_male_5_to_9_years_change_sum*100/total_male_5_to_9_years,
+       total_male_10_to_14_years_change_ave=total_male_10_to_14_years_change_sum*100/total_male_10_to_14_years,
+       total_male_15_to_17_years_change_ave=total_male_15_to_17_years_change_sum*100/total_male_15_to_17_years,
+       total_male_18_and_19_years_change_ave=total_male_18_and_19_years_change_sum*100/total_male_18_and_19_years,
+       total_male_20_years_change_ave=total_male_20_years_change_sum*100/total_male_20_years,
+       total_male_21_years_change_ave=total_male_21_years_change_sum*100/total_male_21_years,
+       total_male_22_to_24_years_change_ave=total_male_22_to_24_years_change_sum*100/total_male_22_to_24_years,
+       total_male_25_to_29_years_change_ave=total_male_25_to_29_years_change_sum*100/total_male_25_to_29_years,
+       total_male_30_to_34_years_change_ave=total_male_30_to_34_years_change_sum*100/total_male_30_to_34_years,
+       total_male_35_to_39_years_change_ave=total_male_35_to_39_years_change_sum*100/total_male_35_to_39_years,
+       total_male_40_to_44_years_change_ave=total_male_40_to_44_years_change_sum*100/total_male_40_to_44_years,
+       total_male_45_to_49_years_change_ave=total_male_45_to_49_years_change_sum*100/total_male_45_to_49_years,
+       total_male_50_to_54_years_change_ave=total_male_50_to_54_years_change_sum*100/total_male_50_to_54_years,
+       total_male_55_to_59_years_change_ave=total_male_55_to_59_years_change_sum*100/total_male_55_to_59_years,
+       total_male_60_and_61_years_change_ave=total_male_60_and_61_years_change_sum*100/total_male_60_and_61_years,
+       total_male_62_to_64_years_change_ave=total_male_62_to_64_years_change_sum*100/total_male_62_to_64_years,
+       total_male_65_and_66_years_change_ave=total_male_65_and_66_years_change_sum*100/total_male_65_and_66_years,
+       total_male_67_to_69_years_change_ave=total_male_67_to_69_years_change_sum*100/total_male_67_to_69_years,
+       total_male_70_to_74_years_change_ave=total_male_70_to_74_years_change_sum*100/total_male_70_to_74_years,
+       total_male_75_to_79_years_change_ave=total_male_75_to_79_years_change_sum*100/total_male_75_to_79_years,
+       total_male_80_to_84_years_change_ave=total_male_80_to_84_years_change_sum*100/total_male_80_to_84_years,
+       total_male_85_years_and_over_change_ave=total_male_85_years_and_over_change_sum*100/total_male_85_years_and_over,
+       total_female_change_ave=total_female_change_sum*100/total_female,
+       total_female_under_5_years_change_ave=total_female_under_5_years_change_sum*100/total_female_under_5_years,
+       total_female_5_to_9_years_change_ave=total_female_5_to_9_years_change_sum*100/total_female_5_to_9_years,
+       total_female_10_to_14_years_change_ave=total_female_10_to_14_years_change_sum*100/total_female_10_to_14_years,
+       total_female_15_to_17_years_change_ave=total_female_15_to_17_years_change_sum*100/total_female_15_to_17_years,
+       total_female_18_and_19_years_change_ave=total_female_18_and_19_years_change_sum*100/total_female_18_and_19_years,
+       total_female_20_years_change_ave=total_female_20_years_change_sum*100/total_female_20_years,
+       total_female_21_years_change_ave=total_female_21_years_change_sum*100/total_female_21_years,
+       total_female_22_to_24_years_change_ave=total_female_22_to_24_years_change_sum*100/total_female_22_to_24_years,
+       total_female_25_to_29_years_change_ave=total_female_25_to_29_years_change_sum*100/total_female_25_to_29_years,
+       total_female_30_to_34_years_change_ave=total_female_30_to_34_years_change_sum*100/total_female_30_to_34_years,
+       total_female_35_to_39_years_change_ave=total_female_35_to_39_years_change_sum*100/total_female_35_to_39_years,
+       total_female_40_to_44_years_change_ave=total_female_40_to_44_years_change_sum*100/total_female_40_to_44_years,
+       total_female_45_to_49_years_change_ave=total_female_45_to_49_years_change_sum*100/total_female_45_to_49_years,
+       total_female_50_to_54_years_change_ave=total_female_50_to_54_years_change_sum*100/total_female_50_to_54_years,
+       total_female_55_to_59_years_change_ave=total_female_55_to_59_years_change_sum*100/total_female_55_to_59_years,
+       total_female_60_and_61_years_change_ave=total_female_60_and_61_years_change_sum*100/total_female_60_and_61_years,
+       total_female_62_to_64_years_change_ave=total_female_62_to_64_years_change_sum*100/total_female_62_to_64_years,
+       total_female_65_and_66_years_change_ave=total_female_65_and_66_years_change_sum*100/total_female_65_and_66_years,
+       total_female_67_to_69_years_change_ave=total_female_67_to_69_years_change_sum*100/total_female_67_to_69_years,
+       total_female_70_to_74_years_change_ave=total_female_70_to_74_years_change_sum*100/total_female_70_to_74_years,
+       total_female_75_to_79_years_change_ave=total_female_75_to_79_years_change_sum*100/total_female_75_to_79_years,
+       total_female_80_to_84_years_change_ave=total_female_80_to_84_years_change_sum*100/total_female_80_to_84_years,
+       total_female_85_years_and_over_change_ave=total_female_85_years_and_over_change_sum*100/total_female_85_years_and_over)
+
+wirte.csv(reddf, "age_group_changes.csv")
+```
+
+This section plots the results from the previous code chunk.
+
+``` r
+library(ggplot2)
+library(tidyverse)
+
+age_groups <- read.csv("age_group_changes.csv")
+age_groups_fixed <- pivot_longer(age_groups, cols = 2:3, names_to = "gender", values_to = "coef")
+ggplot(data = age_groups_fixed, aes(x = X, y = coef, fill = gender)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  scale_x_discrete(limits=age_groups_fixed$X) +
+  labs(y= "Reduction of PM2.5 \n (in Percent)", x = "Age Group") +
+  scale_fill_manual(values=c("#b84279","#3751e5"))
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-45-1.png)
+
 ## References
+
+Similar Paper (Used for some of the methodology)
+
+1.  Chen, Y., & Whalley, A. (2012). Green infrastructure: The effects of
+    urban rail transit on air quality. *American Economic Journal:
+    Economic Policy*, *4*(1), 58-97.
 
 Sources of Data
 

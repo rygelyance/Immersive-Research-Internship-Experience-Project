@@ -132,7 +132,6 @@ plot(buff2,
      breaks=c(-30, -25, -20, -15, -10, -5),
      col=map.pal("water"),
      cex.main=2.125,
-     main="Average PM2.5 Change \n at Each Light Rail Station",
      plg=list( # parameters for drawing legend
        title = "Change in PM2.5 \n (in Percents)",
        title.cex = 1.5, # Legend title size
