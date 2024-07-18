@@ -1620,6 +1620,15 @@ ggplot(data = age_groups_fixed, aes(x = X, y = coef, fill = gender)) +
 
 ![](README_files/figure-commonmark/unnamed-chunk-45-1.png)
 
+## Conclusion
+
+Each age group, regardless of gender, experienced an average reduction
+in PM2.5 of about 16-17%. Younger age groups showed a slightly higher
+reduction, potentially due to greater reliance on public transportation
+and their closer proximity to the light rail. This disparity suggests a
+need for further research into the lesser reductions observed in older
+age groups.
+
 ## References
 
 Similar Paper (Used for some of the methodology)
