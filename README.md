@@ -1,5 +1,8 @@
-# Twin Cities Station Mapping
+# Immmersive Research Internship Experience Project
+By: Rygel Yance and Camillo Lin
 
+## Background
+This is our research project done for the University of Marlyand's Immersive Research Internship Experience (IRIE)! This work took course over a total of 8 weeks and was presented at the 2024 Summer Undergraduate Research Conference Survey.
 
 ## Research Question
 
