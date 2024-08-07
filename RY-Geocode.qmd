@@ -19,7 +19,7 @@ station_data <- read.csv("Twin Cities Stations - Sheet1.csv") %>%
 This next segments use a Google API key in order to get the locations of each station of the light rail in latitude/longitude coordinates, then fixes a few select points where the Google API failed to get a precise location.
 
 ```{r}
-register_google(key = "AIzaSyCA9_G1smyPrHEIa92k1IF0dwBsAGFCNXM", write = TRUE)
+register_google(key = "GoogleAPIKey", write = TRUE)
 
 addr.geo <- mutate_geocode(station_data, location = Station2, output = "latlona")
 ```
